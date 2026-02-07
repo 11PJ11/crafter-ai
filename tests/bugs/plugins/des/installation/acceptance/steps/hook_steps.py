@@ -17,7 +17,7 @@ from pathlib import Path
 import pytest
 from pytest_bdd import given, parsers, then, when
 
-from .helpers import count_des_hooks, is_des_hook
+from .helpers import count_des_hooks, is_des_hook, is_des_hook_entry
 
 
 # -----------------------------------------------------------------------------
@@ -97,7 +97,7 @@ def settings_with_custom_hook(settings_with_mixed_hooks: Path, test_context: dic
         config = json.load(f)
 
     pre_hooks = config.get("hooks", {}).get("PreToolUse", [])
-    non_des_hooks = [h for h in pre_hooks if not is_des_hook(h.get("command", ""))]
+    non_des_hooks = [h for h in pre_hooks if not is_des_hook_entry(h)]
     assert len(non_des_hooks) > 0, "Expected at least one non-DES hook"
 
 
@@ -127,8 +127,8 @@ def hooks_installed_then_uninstalled(
 
     Creates clean state as if DES was previously used but then removed.
     """
-    # Create settings file
-    settings_file = temp_claude_dir / "settings.local.json"
+    # Create settings file (plugin reads/writes settings.json)
+    settings_file = temp_claude_dir / "settings.json"
     settings_file.write_text(json.dumps({"permissions": {"allow": []}}, indent=2))
     test_context["settings_file"] = settings_file
 
@@ -161,10 +161,10 @@ def install_des_hooks(
 
     Uses the real DESPlugin._install_des_hooks() method.
     """
-    # Ensure settings file exists
+    # Ensure settings file exists (plugin reads/writes settings.json)
     settings_file = test_context.get("settings_file")
     if not settings_file:
-        settings_file = temp_claude_dir / "settings.local.json"
+        settings_file = temp_claude_dir / "settings.json"
         if not settings_file.exists():
             settings_file.write_text(
                 json.dumps({"permissions": {"allow": []}}, indent=2)
@@ -329,6 +329,7 @@ def verify_no_duplicates(test_context: dict):
     Verify no duplicate hook entries exist.
 
     Checks that each hook command appears only once.
+    Supports both flat and nested hook formats.
     """
     settings_file = test_context.get("settings_file")
     with open(settings_file) as f:
@@ -336,8 +337,17 @@ def verify_no_duplicates(test_context: dict):
 
     for hook_type in ["PreToolUse", "SubagentStop"]:
         hooks = config.get("hooks", {}).get(hook_type, [])
-        commands = [h.get("command", "") for h in hooks]
-        des_commands = [c for c in commands if is_des_hook(c)]
+        des_commands = []
+        for h in hooks:
+            # Flat format
+            cmd = h.get("command", "")
+            if is_des_hook(cmd):
+                des_commands.append(cmd)
+            # Nested format
+            for inner in h.get("hooks", []):
+                cmd = inner.get("command", "")
+                if is_des_hook(cmd):
+                    des_commands.append(cmd)
 
         # Check for duplicates
         unique_commands = set(des_commands)
@@ -359,7 +369,7 @@ def verify_non_des_hooks_preserved(test_context: dict):
         config = json.load(f)
 
     pre_hooks = config.get("hooks", {}).get("PreToolUse", [])
-    non_des_hooks = [h for h in pre_hooks if not is_des_hook(h.get("command", ""))]
+    non_des_hooks = [h for h in pre_hooks if not is_des_hook_entry(h)]
 
     assert len(non_des_hooks) > 0, (
         "BUG: Non-DES hooks were removed during DES operation. "
@@ -421,16 +431,27 @@ def verify_no_new_duplicates(install_context, des_plugin, test_context: dict):
 
 @then("the hook should use the new command format")
 def verify_new_command_format(test_context: dict):
-    """Verify hooks use the new command format (python3 -m ...)."""
+    """Verify hooks use the new nested command format (python3 -m ...)."""
     settings_file = test_context.get("settings_file")
     with open(settings_file) as f:
         config = json.load(f)
 
     pre_hooks = config.get("hooks", {}).get("PreToolUse", [])
-    des_hooks = [h for h in pre_hooks if is_des_hook(h.get("command", ""))]
 
-    for hook in des_hooks:
-        command = hook.get("command", "")
+    # Collect DES hook commands from both flat and nested formats
+    des_commands = []
+    for h in pre_hooks:
+        # Flat format
+        if is_des_hook(h.get("command", "")):
+            des_commands.append(h.get("command", ""))
+        # Nested format
+        for inner in h.get("hooks", []):
+            if is_des_hook(inner.get("command", "")):
+                des_commands.append(inner.get("command", ""))
+
+    assert len(des_commands) > 0, "No DES hooks found"
+
+    for command in des_commands:
         assert "python3 -m des." in command, (
             f"Hook command should use new format 'python3 -m des...', "
             f"but found: {command}"

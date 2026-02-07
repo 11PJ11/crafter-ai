@@ -37,9 +37,8 @@ def _get_template_path() -> Path:
     module_str = str(module_file).replace("\\", "/")
     module_resolved_str = str(module_file.resolve()).replace("\\", "/")
 
-    is_installed = (
-        (".claude" in module_str or ".claude" in module_resolved_str) and
-        ("lib/python/des" in module_str or "lib/python/des" in module_resolved_str)
+    is_installed = (".claude" in module_str or ".claude" in module_resolved_str) and (
+        "lib/python/des" in module_str or "lib/python/des" in module_resolved_str
     )
 
     if is_installed:

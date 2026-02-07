@@ -5,7 +5,7 @@ Tests the DRY refactoring of common markdown formatting logic into
 _format_instruction_element() method.
 """
 
-from src.des.domain.timeout_instruction_template import TimeoutInstructionTemplate
+from des.domain.timeout_instruction_template import TimeoutInstructionTemplate
 
 
 class TestFormatInstructionElement:

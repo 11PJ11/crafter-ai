@@ -11,8 +11,11 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-from src.des.ports.driver_ports.pre_tool_use_port import HookDecision
+
+if TYPE_CHECKING:
+    from des.ports.driver_ports.pre_tool_use_port import HookDecision
 
 
 @dataclass(frozen=True)

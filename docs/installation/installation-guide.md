@@ -26,7 +26,7 @@ pip3 install pipenv
 
 ```bash
 # Clone the repository
-git clone https://github.com/11PJ11/crafter-ai.git
+git clone https://github.com/nWave-ai/nWave.git
 cd crafter-ai
 
 # Install dependencies in virtual environment
@@ -44,7 +44,7 @@ python scripts/install/install_nwave.py
 
 ```bash
 # Download the standalone installer
-curl -O https://github.com/11PJ11/crafter-ai/releases/latest/download/install-nwave-claude-code.py
+curl -O https://github.com/nWave-ai/nWave/releases/latest/download/install-nwave-claude-code.py
 
 # Run within pipenv environment
 pipenv run python install-nwave-claude-code.py

@@ -11,6 +11,7 @@ import logging
 from pathlib import Path
 
 import pytest
+
 from scripts.install.plugins.base import InstallContext
 from scripts.install.plugins.des_plugin import DESPlugin
 
@@ -160,9 +161,9 @@ class TestDESPluginVerifyModuleImport:
         for template in plugin.DES_TEMPLATES:
             (templates_dir / template).touch()
 
-        # Create settings.local.json with hooks
+        # Create settings.json with hooks (verify() checks settings.json)
         lib_path = install_context.claude_dir / "lib" / "python"
-        settings_file = install_context.claude_dir / "settings.local.json"
+        settings_file = install_context.claude_dir / "settings.json"
         hooks_config = {
             "hooks": {
                 "PreToolUse": [
@@ -390,9 +391,9 @@ class TestDESPluginVerifyComplete:
         for template in plugin.DES_TEMPLATES:
             (templates_dir / template).touch()
 
-        # Create settings.local.json with hooks
+        # Create settings.json with hooks (verify() checks settings.json)
         lib_path = install_context.claude_dir / "lib" / "python"
-        settings_file = install_context.claude_dir / "settings.local.json"
+        settings_file = install_context.claude_dir / "settings.json"
         hooks_config = {
             "hooks": {
                 "PreToolUse": [

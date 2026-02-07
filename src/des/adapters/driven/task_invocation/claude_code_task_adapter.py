@@ -7,7 +7,7 @@ sub-agents in production environments.
 
 from typing import Any
 
-from src.des.ports.driven_ports.task_invocation_port import TaskInvocationPort
+from des.ports.driven_ports.task_invocation_port import TaskInvocationPort
 
 
 class ClaudeCodeTaskAdapter(TaskInvocationPort):

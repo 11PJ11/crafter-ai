@@ -23,11 +23,11 @@ def _make_patches():
     mock_time_cls.return_value = mock_time_provider
 
     writer_patch = patch(
-        "src.des.application.orchestrator.JsonlAuditLogWriter",
+        "des.application.orchestrator.JsonlAuditLogWriter",
         mock_writer_cls,
     )
     time_patch = patch(
-        "src.des.adapters.driven.time.system_time.SystemTimeProvider",
+        "des.adapters.driven.time.system_time.SystemTimeProvider",
         mock_time_cls,
     )
     return writer_patch, time_patch, mock_writer
@@ -39,7 +39,7 @@ class TestLogAuditEventDirectFields:
     def test_feature_name_and_step_id_as_direct_fields(self):
         """AC1: When called with feature_name and step_id kwargs,
         PortAuditEvent has them as direct fields, NOT in data dict."""
-        from src.des.application.orchestrator import _log_audit_event
+        from des.application.orchestrator import _log_audit_event
 
         writer_patch, time_patch, mock_writer = _make_patches()
 
@@ -64,7 +64,7 @@ class TestLogAuditEventDirectFields:
     def test_direct_fields_with_extra_kwargs_in_data(self):
         """AC2: When called with feature_name, step_id, AND other kwargs,
         feature_name/step_id are direct fields; command/agent in data dict."""
-        from src.des.application.orchestrator import _log_audit_event
+        from des.application.orchestrator import _log_audit_event
 
         writer_patch, time_patch, mock_writer = _make_patches()
 
@@ -94,7 +94,7 @@ class TestLogAuditEventDirectFields:
     def test_without_feature_name_or_step_id(self):
         """AC3: When called WITHOUT feature_name or step_id,
         PortAuditEvent has feature_name=None, step_id=None, all kwargs in data dict."""
-        from src.des.application.orchestrator import _log_audit_event
+        from des.application.orchestrator import _log_audit_event
 
         writer_patch, time_patch, mock_writer = _make_patches()
 
@@ -118,7 +118,7 @@ class TestLogAuditEventDirectFields:
     def test_none_valued_feature_name_excluded_from_data(self):
         """AC4: When called with None-valued feature_name,
         it's excluded from data dict (existing None-filtering), feature_name=None on event."""
-        from src.des.application.orchestrator import _log_audit_event
+        from des.application.orchestrator import _log_audit_event
 
         writer_patch, time_patch, mock_writer = _make_patches()
 

@@ -24,7 +24,7 @@ class TestStaleExecutionCreation:
         WHEN creating StaleExecution value object
         THEN object is created with all fields set correctly
         """
-        from src.des.domain.stale_execution import StaleExecution
+        from des.domain.stale_execution import StaleExecution
 
         stale_exec = StaleExecution(
             step_file="steps/01-01.json",
@@ -44,7 +44,7 @@ class TestStaleExecutionCreation:
         WHEN attempting to modify any field
         THEN FrozenInstanceError is raised (dataclass frozen=True)
         """
-        from src.des.domain.stale_execution import StaleExecution
+        from des.domain.stale_execution import StaleExecution
 
         stale_exec = StaleExecution(
             step_file="steps/01-01.json",
@@ -62,7 +62,7 @@ class TestStaleExecutionCreation:
         WHEN creating StaleExecution
         THEN object is created successfully (0 is valid)
         """
-        from src.des.domain.stale_execution import StaleExecution
+        from des.domain.stale_execution import StaleExecution
 
         stale_exec = StaleExecution(
             step_file="steps/02-01.json",
@@ -83,7 +83,7 @@ class TestStaleExecutionBusinessValidation:
         WHEN creating StaleExecution
         THEN ValueError is raised with descriptive message
         """
-        from src.des.domain.stale_execution import StaleExecution
+        from des.domain.stale_execution import StaleExecution
 
         with pytest.raises(ValueError) as exc_info:
             StaleExecution(
@@ -101,7 +101,7 @@ class TestStaleExecutionBusinessValidation:
         WHEN creating StaleExecution
         THEN object is created successfully (no upper bound limit)
         """
-        from src.des.domain.stale_execution import StaleExecution
+        from des.domain.stale_execution import StaleExecution
 
         stale_exec = StaleExecution(
             step_file="steps/03-01.json",
@@ -122,7 +122,7 @@ class TestStaleExecutionEquality:
         WHEN comparing for equality
         THEN they are considered equal (value object semantics)
         """
-        from src.des.domain.stale_execution import StaleExecution
+        from des.domain.stale_execution import StaleExecution
 
         stale1 = StaleExecution(
             step_file="steps/01-01.json",
@@ -146,7 +146,7 @@ class TestStaleExecutionEquality:
         WHEN comparing for equality
         THEN they are not equal
         """
-        from src.des.domain.stale_execution import StaleExecution
+        from des.domain.stale_execution import StaleExecution
 
         stale1 = StaleExecution(
             step_file="steps/01-01.json",
@@ -174,7 +174,7 @@ class TestStaleExecutionStringRepresentation:
         WHEN converting to string representation
         THEN repr contains all field values for debugging
         """
-        from src.des.domain.stale_execution import StaleExecution
+        from des.domain.stale_execution import StaleExecution
 
         stale_exec = StaleExecution(
             step_file="steps/01-01.json",
@@ -200,7 +200,7 @@ class TestStaleExecutionFieldTypes:
         WHEN creating StaleExecution
         THEN object is created successfully (supports any valid file path)
         """
-        from src.des.domain.stale_execution import StaleExecution
+        from des.domain.stale_execution import StaleExecution
 
         stale_exec = StaleExecution(
             step_file="projects/feature-x/steps/05-02.json",
@@ -217,7 +217,7 @@ class TestStaleExecutionFieldTypes:
         WHEN creating StaleExecution for each phase
         THEN all phase names are accepted (no enum restriction)
         """
-        from src.des.domain.stale_execution import StaleExecution
+        from des.domain.stale_execution import StaleExecution
 
         phase_names = [
             "PREPARE",

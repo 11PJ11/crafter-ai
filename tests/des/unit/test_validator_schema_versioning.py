@@ -10,12 +10,12 @@ Schema v3.0 (CURRENT): 7 phases - loaded from canonical template
 These tests ensure validator stays synchronized with canonical template.
 """
 
-from src.des.application.tdd_template_loader import (
+from des.application.tdd_template_loader import (
     get_expected_phase_count,
     get_schema_version,
     get_valid_tdd_phases,
 )
-from src.des.application.validator import (
+from des.application.validator import (
     ExecutionLogValidator,
     TDDPhaseValidator,
 )

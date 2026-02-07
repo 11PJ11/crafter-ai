@@ -23,7 +23,7 @@ class TestDESMarkerValidator:
 
         Business Value: Valid markers don't block legitimate prompts.
         """
-        from src.des.application.validator import DESMarkerValidator
+        from des.application.validator import DESMarkerValidator
 
         prompt_with_valid_marker = """
         <!-- DES-VALIDATION: required -->
@@ -43,7 +43,7 @@ class TestDESMarkerValidator:
 
         Business Value: Typos in marker values are caught immediately.
         """
-        from src.des.application.validator import DESMarkerValidator
+        from des.application.validator import DESMarkerValidator
 
         prompt_with_invalid_marker = """
         <!-- DES-VALIDATION: unknown -->
@@ -65,7 +65,7 @@ class TestDESMarkerValidator:
 
         Business Value: Only 'required' is valid - no alternatives.
         """
-        from src.des.application.validator import DESMarkerValidator
+        from des.application.validator import DESMarkerValidator
 
         prompt_with_invalid_marker = """
         <!-- DES-VALIDATION: optional -->
@@ -87,7 +87,7 @@ class TestDESMarkerValidator:
 
         Business Value: Edge case validation - ambiguous values rejected.
         """
-        from src.des.application.validator import DESMarkerValidator
+        from des.application.validator import DESMarkerValidator
 
         prompt_with_invalid_marker = """
         <!-- DES-VALIDATION: maybe -->
@@ -109,7 +109,7 @@ class TestDESMarkerValidator:
 
         Business Value: Incomplete markers are rejected.
         """
-        from src.des.application.validator import DESMarkerValidator
+        from des.application.validator import DESMarkerValidator
 
         prompt_with_empty_marker = """
         <!-- DES-VALIDATION:  -->
@@ -131,7 +131,7 @@ class TestDESMarkerValidator:
 
         Business Value: Prompts without DES marker are caught as malformed.
         """
-        from src.des.application.validator import DESMarkerValidator
+        from des.application.validator import DESMarkerValidator
 
         prompt_without_marker = """
         # DES_METADATA
@@ -154,7 +154,7 @@ class TestDESMarkerValidator:
 
         Business Value: Strict validation prevents typos and variations.
         """
-        from src.des.application.validator import DESMarkerValidator
+        from des.application.validator import DESMarkerValidator
 
         prompt_with_case_error = """
         <!-- DES-VALIDATION: Required -->
@@ -178,7 +178,7 @@ class TestDESMarkerValidator:
 
         Note: Missing colon (:) after DES-VALIDATION makes this malformed.
         """
-        from src.des.application.validator import DESMarkerValidator
+        from des.application.validator import DESMarkerValidator
 
         prompt_with_malformed_syntax = """
         <!-- DES-VALIDATION required -->
@@ -201,7 +201,7 @@ class TestDESMarkerValidator:
 
         Business Value: Common formatting variations don't cause failures.
         """
-        from src.des.application.validator import DESMarkerValidator
+        from des.application.validator import DESMarkerValidator
 
         prompt_with_whitespace = """
         <!-- DES-VALIDATION:  required  -->
@@ -224,7 +224,7 @@ class TestDESMarkerValidator:
 
         Note: Having multiple markers is itself a problem; validation should address it.
         """
-        from src.des.application.validator import DESMarkerValidator
+        from des.application.validator import DESMarkerValidator
 
         prompt_with_multiple_markers = """
         <!-- DES-VALIDATION: required -->

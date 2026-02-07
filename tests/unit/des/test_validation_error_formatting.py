@@ -5,7 +5,7 @@ Tests that validation errors include "FIX:" prefixed recovery guidance
 inline in error messages, helping developers understand how to fix issues.
 """
 
-from src.des.application.validator import TemplateValidator
+from des.application.validator import TemplateValidator
 
 
 class TestValidationErrorWithRecoveryGuidance:

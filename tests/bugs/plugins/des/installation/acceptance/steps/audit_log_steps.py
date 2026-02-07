@@ -189,10 +189,10 @@ def write_event_project_beta(test_context: dict):
 def _write_test_audit_event(test_context: dict, project_name: str):
     """Helper to write a test audit event."""
     try:
-        from src.des.adapters.driven.logging.jsonl_audit_log_writer import (
+        from des.adapters.driven.logging.jsonl_audit_log_writer import (
             JsonlAuditLogWriter,
         )
-        from src.des.ports.driven_ports.audit_log_writer import AuditEvent
+        from des.ports.driven_ports.audit_log_writer import AuditEvent
 
         project_dir = test_context.get("project_dir")
         if project_dir:
@@ -224,7 +224,7 @@ def initialize_audit_logger(test_context: dict):
     This tests where the logger writes logs by default.
     """
     try:
-        from src.des.adapters.driven.logging.jsonl_audit_log_writer import (
+        from des.adapters.driven.logging.jsonl_audit_log_writer import (
             JsonlAuditLogWriter,
         )
 
@@ -244,7 +244,7 @@ def write_audit_event(test_context: dict):
     """
     writer = test_context.get("audit_logger")
     if writer:
-        from src.des.ports.driven_ports.audit_log_writer import AuditEvent
+        from des.ports.driven_ports.audit_log_writer import AuditEvent
 
         writer.log_event(
             AuditEvent(

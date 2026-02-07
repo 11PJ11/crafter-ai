@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from src.des.ports.driven_ports.audit_log_reader import AuditLogReader
+    from des.ports.driven_ports.audit_log_reader import AuditLogReader
 
 
 class PostToolUseService:

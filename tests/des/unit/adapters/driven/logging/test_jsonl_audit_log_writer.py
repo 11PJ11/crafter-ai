@@ -11,8 +11,8 @@ Tests verify:
 
 import json
 
-from src.des.adapters.driven.logging.jsonl_audit_log_writer import JsonlAuditLogWriter
-from src.des.ports.driven_ports.audit_log_writer import AuditEvent
+from des.adapters.driven.logging.jsonl_audit_log_writer import JsonlAuditLogWriter
+from des.ports.driven_ports.audit_log_writer import AuditEvent
 
 
 def _read_all_entries(writer: JsonlAuditLogWriter) -> list[dict]:

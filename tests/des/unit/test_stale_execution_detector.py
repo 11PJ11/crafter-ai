@@ -19,7 +19,7 @@ TEST STRATEGY: Classical TDD (real domain objects, no mocking inside hexagon)
 import json
 from datetime import datetime, timedelta, timezone
 
-from src.des.application.stale_execution_detector import StaleExecutionDetector
+from des.application.stale_execution_detector import StaleExecutionDetector
 
 
 class TestStaleExecutionDetectorInitialization:
@@ -325,7 +325,7 @@ class TestStaleExecutionDetectorStaleDetectionResult:
         detector = StaleExecutionDetector(project_root=tmp_path)
         result = detector.scan_for_stale_executions()
 
-        from src.des.domain.stale_detection_result import StaleDetectionResult
+        from des.domain.stale_detection_result import StaleDetectionResult
 
         assert isinstance(result, StaleDetectionResult)
 
@@ -359,7 +359,7 @@ class TestStaleExecutionDetectorStaleDetectionResult:
         detector = StaleExecutionDetector(project_root=tmp_path)
         result = detector.scan_for_stale_executions()
 
-        from src.des.domain.stale_execution import StaleExecution
+        from des.domain.stale_execution import StaleExecution
 
         assert len(result.stale_executions) == 1
         assert isinstance(result.stale_executions[0], StaleExecution)

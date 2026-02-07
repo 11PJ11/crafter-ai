@@ -1,1 +1,0 @@
-"""Crafter-AI installer package."""

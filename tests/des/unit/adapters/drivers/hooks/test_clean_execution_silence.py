@@ -61,7 +61,7 @@ class TestCleanExecutionSilence:
 
         # Mock ScopeValidator to return clean result
         with patch(
-            "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
+            "des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
         ) as mock_validator_class:
             mock_validator = Mock()
             mock_validator_class.return_value = mock_validator
@@ -121,11 +121,9 @@ class TestCleanExecutionSilence:
 
         with (
             patch(
-                "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
+                "des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
             ) as mock_validator_class,
-            patch(
-                "src.des.adapters.driven.hooks.subagent_stop_hook.logger"
-            ) as mock_logger,
+            patch("des.adapters.driven.hooks.subagent_stop_hook.logger") as mock_logger,
         ):
             mock_validator = Mock()
             mock_validator_class.return_value = mock_validator
@@ -180,11 +178,9 @@ class TestCleanExecutionSilence:
 
         with (
             patch(
-                "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
+                "des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
             ) as mock_validator_class,
-            patch(
-                "src.des.adapters.driven.hooks.subagent_stop_hook.logger"
-            ) as mock_logger,
+            patch("des.adapters.driven.hooks.subagent_stop_hook.logger") as mock_logger,
         ):
             mock_validator = Mock()
             mock_validator_class.return_value = mock_validator
@@ -239,9 +235,9 @@ class TestCleanExecutionSilence:
 
         with (
             patch(
-                "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
+                "des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
             ) as mock_validator_class,
-            patch("src.des.adapters.driven.hooks.subagent_stop_hook.logger"),
+            patch("des.adapters.driven.hooks.subagent_stop_hook.logger"),
         ):
             mock_validator = Mock()
             mock_validator_class.return_value = mock_validator

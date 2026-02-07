@@ -8,7 +8,8 @@ Validates that /nw:research commands:
 """
 
 import pytest
-from src.des.application.orchestrator import DESOrchestrator
+
+from des.application.orchestrator import DESOrchestrator
 
 
 class TestResearchCommandValidation:

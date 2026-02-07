@@ -7,7 +7,7 @@ returning predefined results instead of invoking actual tasks.
 
 from typing import Any
 
-from src.des.ports.driven_ports.task_invocation_port import TaskInvocationPort
+from des.ports.driven_ports.task_invocation_port import TaskInvocationPort
 
 
 class MockedTaskAdapter(TaskInvocationPort):

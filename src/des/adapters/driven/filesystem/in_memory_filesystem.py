@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from src.des.ports.driven_ports.filesystem_port import FileSystemPort
+from des.ports.driven_ports.filesystem_port import FileSystemPort
 
 
 class InMemoryFileSystem(FileSystemPort):

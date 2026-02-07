@@ -21,6 +21,7 @@ integration protocol.
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 import yaml
@@ -43,13 +44,14 @@ def invoke_hook(hook_type: str, payload: dict) -> tuple[int, dict]:
     """
     env = os.environ.copy()
     project_root = str(Path(__file__).parent.parent.parent.parent)
-    env["PYTHONPATH"] = project_root + os.pathsep + env.get("PYTHONPATH", "")
+    src_path = str(Path(project_root) / "src")
+    env["PYTHONPATH"] = src_path + os.pathsep + env.get("PYTHONPATH", "")
 
     proc = subprocess.run(
         [
-            "python3",
+            sys.executable,
             "-m",
-            "src.des.adapters.drivers.hooks.claude_code_hook_adapter",
+            "des.adapters.drivers.hooks.claude_code_hook_adapter",
             hook_type,
         ],
         input=json.dumps(payload),
@@ -450,13 +452,14 @@ class TestDualLayerEnforcement:
         # Act: Invoke with empty stdin
         env = os.environ.copy()
         project_root = str(Path(__file__).parent.parent.parent.parent)
-        env["PYTHONPATH"] = project_root + os.pathsep + env.get("PYTHONPATH", "")
+        src_path = str(Path(project_root) / "src")
+        env["PYTHONPATH"] = src_path + os.pathsep + env.get("PYTHONPATH", "")
 
         proc = subprocess.run(
             [
-                "python3",
+                sys.executable,
                 "-m",
-                "src.des.adapters.drivers.hooks.claude_code_hook_adapter",
+                "des.adapters.drivers.hooks.claude_code_hook_adapter",
                 "subagent-stop",
             ],
             input="",

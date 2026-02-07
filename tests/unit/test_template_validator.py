@@ -4,7 +4,7 @@ Unit Tests: TemplateValidator Components
 Tests for des.validator module:
 - TemplateValidator: Main entry point for validation
 - MandatorySectionChecker: Validates 8 mandatory sections
-- TDDPhaseValidator: Validates 14 TDD phases
+- TDDPhaseValidator: Validates 7 TDD phases
 - ValidationResult: Data class for validation results
 """
 
@@ -14,7 +14,7 @@ class TestValidationResultDataclass:
 
     def test_validation_result_with_passed_status(self):
         """ValidationResult stores PASSED status with empty errors."""
-        from src.des.application.validator import ValidationResult
+        from des.application.validator import ValidationResult
 
         result = ValidationResult(
             status="PASSED", errors=[], task_invocation_allowed=True, duration_ms=45.3
@@ -27,11 +27,11 @@ class TestValidationResultDataclass:
 
     def test_validation_result_with_failed_status(self):
         """ValidationResult stores FAILED status with errors list."""
-        from src.des.application.validator import ValidationResult
+        from des.application.validator import ValidationResult
 
         errors = [
             "MISSING: Mandatory section 'TIMEOUT_INSTRUCTION' not found",
-            "INCOMPLETE: TDD phase 'REFACTOR_L3' not mentioned",
+            "INCOMPLETE: TDD phase 'REFACTOR_CONTINUOUS' not mentioned",
         ]
         result = ValidationResult(
             status="FAILED",
@@ -50,7 +50,7 @@ class TestMandatorySectionChecker:
 
     def test_complete_prompt_validates_all_sections(self):
         """Prompt with all 8 sections passes validation."""
-        from src.des.application.validator import MandatorySectionChecker
+        from des.application.validator import MandatorySectionChecker
 
         prompt = """
         # DES_METADATA
@@ -85,7 +85,7 @@ class TestMandatorySectionChecker:
 
     def test_missing_timeout_instruction_section(self):
         """Prompt missing TIMEOUT_INSTRUCTION returns error."""
-        from src.des.application.validator import MandatorySectionChecker
+        from des.application.validator import MandatorySectionChecker
 
         prompt = """
         # DES_METADATA
@@ -118,7 +118,7 @@ class TestMandatorySectionChecker:
 
     def test_missing_multiple_sections(self):
         """Prompt missing multiple sections returns multiple errors."""
-        from src.des.application.validator import MandatorySectionChecker
+        from des.application.validator import MandatorySectionChecker
 
         prompt = """
         # DES_METADATA
@@ -138,11 +138,11 @@ class TestMandatorySectionChecker:
 
 
 class TestTDDPhaseValidator:
-    """TDDPhaseValidator validates 14 TDD phases."""
+    """TDDPhaseValidator validates 7 TDD phases."""
 
-    def test_all_14_phases_present(self):
-        """Prompt mentioning all 14 phases passes validation."""
-        from src.des.application.validator import TDDPhaseValidator
+    def test_all_7_phases_present(self):
+        """Prompt mentioning all 7 phases passes validation."""
+        from des.application.validator import TDDPhaseValidator
 
         prompt = """
         # TDD_7_PHASES
@@ -150,17 +150,10 @@ class TestTDDPhaseValidator:
         1. PREPARE
         2. RED_ACCEPTANCE
         3. RED_UNIT
-        4. GREEN_UNIT
-        5. CHECK_ACCEPTANCE
-        6. GREEN_ACCEPTANCE
-        7. REVIEW
-        8. REFACTOR_L1
-        9. REFACTOR_L2
-        10. REFACTOR_L3
-        11. REFACTOR_L4
-        12. POST_REFACTOR_REVIEW
-        13. FINAL_VALIDATE
-        14. COMMIT
+        4. GREEN
+        5. REVIEW
+        6. REFACTOR_CONTINUOUS
+        7. COMMIT
         """
 
         validator = TDDPhaseValidator()
@@ -168,51 +161,41 @@ class TestTDDPhaseValidator:
 
         assert errors == []
 
-    def test_missing_refactor_l3_phase(self):
-        """Prompt missing REFACTOR_L3 returns error."""
-        from src.des.application.validator import TDDPhaseValidator
+    def test_missing_refactor_continuous_phase(self):
+        """Prompt missing REFACTOR_CONTINUOUS returns error."""
+        from des.application.validator import TDDPhaseValidator
 
         prompt = """
         # TDD_7_PHASES
         1. PREPARE
         2. RED_ACCEPTANCE
         3. RED_UNIT
-        4. GREEN_UNIT
-        5. CHECK_ACCEPTANCE
-        6. GREEN_ACCEPTANCE
-        7. REVIEW
-        8. REFACTOR_L1
-        9. REFACTOR_L2
-        10. REFACTOR_L4
-        11. POST_REFACTOR_REVIEW
-        12. FINAL_VALIDATE
-        13. COMMIT
+        4. GREEN
+        5. REVIEW
+        6. COMMIT
         """
 
         validator = TDDPhaseValidator()
         errors = validator.validate(prompt)
 
         assert len(errors) > 0
-        assert any("REFACTOR_L3" in error for error in errors)
+        assert any("REFACTOR_CONTINUOUS" in error for error in errors)
 
     def test_missing_multiple_phases(self):
         """Prompt missing multiple phases returns multiple errors."""
-        from src.des.application.validator import TDDPhaseValidator
+        from des.application.validator import TDDPhaseValidator
 
         prompt = """
         # TDD_7_PHASES
         1. PREPARE
         2. RED_ACCEPTANCE
         3. RED_UNIT
-        4. GREEN_UNIT
-        5. REVIEW
-        6. FINAL_VALIDATE
         """
 
         validator = TDDPhaseValidator()
         errors = validator.validate(prompt)
 
-        assert len(errors) >= 8  # Missing CHECK_ACCEPTANCE, GREEN_ACCEPTANCE, etc.
+        assert len(errors) >= 4  # Missing GREEN, REVIEW, REFACTOR_CONTINUOUS, COMMIT
 
 
 class TestTemplateValidator:
@@ -220,7 +203,7 @@ class TestTemplateValidator:
 
     def test_validator_accepts_complete_prompt(self):
         """Complete prompt with all sections and phases returns PASSED."""
-        from src.des.application.validator import TemplateValidator
+        from des.application.validator import TemplateValidator
 
         prompt = """
         <!-- DES-VALIDATION: required -->
@@ -237,17 +220,10 @@ class TestTemplateValidator:
         1. PREPARE
         2. RED_ACCEPTANCE
         3. RED_UNIT
-        4. GREEN_UNIT
-        5. CHECK_ACCEPTANCE
-        6. GREEN_ACCEPTANCE
-        7. REVIEW
-        8. REFACTOR_L1
-        9. REFACTOR_L2
-        10. REFACTOR_L3
-        11. REFACTOR_L4
-        12. POST_REFACTOR_REVIEW
-        13. FINAL_VALIDATE
-        14. COMMIT
+        4. GREEN
+        5. REVIEW
+        6. REFACTOR_CONTINUOUS
+        7. COMMIT
 
         # QUALITY_GATES
         G1: One test active
@@ -271,7 +247,7 @@ class TestTemplateValidator:
 
     def test_validator_rejects_incomplete_prompt(self):
         """Incomplete prompt returns FAILED with errors."""
-        from src.des.application.validator import TemplateValidator
+        from des.application.validator import TemplateValidator
 
         prompt = """
         # DES_METADATA
@@ -290,7 +266,7 @@ class TestTemplateValidator:
 
     def test_validator_validates_duration(self):
         """Validation includes duration_ms measurement."""
-        from src.des.application.validator import TemplateValidator
+        from des.application.validator import TemplateValidator
 
         prompt = """
         # DES_METADATA
@@ -306,17 +282,10 @@ class TestTemplateValidator:
         1. PREPARE
         2. RED_ACCEPTANCE
         3. RED_UNIT
-        4. GREEN_UNIT
-        5. CHECK_ACCEPTANCE
-        6. GREEN_ACCEPTANCE
-        7. REVIEW
-        8. REFACTOR_L1
-        9. REFACTOR_L2
-        10. REFACTOR_L3
-        11. REFACTOR_L4
-        12. POST_REFACTOR_REVIEW
-        13. FINAL_VALIDATE
-        14. COMMIT
+        4. GREEN
+        5. REVIEW
+        6. REFACTOR_CONTINUOUS
+        7. COMMIT
 
         # QUALITY_GATES
         G1: One test active

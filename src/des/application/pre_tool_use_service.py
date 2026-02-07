@@ -8,16 +8,21 @@ This service implements the PreToolUsePort driver port interface.
 
 from __future__ import annotations
 
-from src.des.domain.des_marker_parser import DesMarkerParser
-from src.des.domain.max_turns_policy import MaxTurnsPolicy
-from src.des.ports.driven_ports.audit_log_writer import AuditEvent, AuditLogWriter
-from src.des.ports.driven_ports.time_provider_port import TimeProvider
-from src.des.ports.driver_ports.pre_tool_use_port import (
+from typing import TYPE_CHECKING
+
+from des.ports.driven_ports.audit_log_writer import AuditEvent, AuditLogWriter
+from des.ports.driver_ports.pre_tool_use_port import (
     HookDecision,
     PreToolUseInput,
     PreToolUsePort,
 )
-from src.des.ports.driver_ports.validator_port import ValidatorPort
+
+
+if TYPE_CHECKING:
+    from des.domain.des_marker_parser import DesMarkerParser
+    from des.domain.max_turns_policy import MaxTurnsPolicy
+    from des.ports.driven_ports.time_provider_port import TimeProvider
+    from des.ports.driver_ports.validator_port import ValidatorPort
 
 
 class PreToolUseService(PreToolUsePort):
@@ -61,7 +66,9 @@ class PreToolUseService(PreToolUsePort):
         policy_result = self._max_turns_policy.validate(input_data.max_turns)
         if not policy_result.is_valid:
             self._log_blocked(policy_result.reason or "MISSING_MAX_TURNS")
-            return HookDecision.block(reason=policy_result.reason or "MISSING_MAX_TURNS")
+            return HookDecision.block(
+                reason=policy_result.reason or "MISSING_MAX_TURNS"
+            )
 
         # Step 2: Parse DES markers
         markers = self._marker_parser.parse(input_data.prompt)

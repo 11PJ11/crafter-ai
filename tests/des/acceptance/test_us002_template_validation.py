@@ -47,7 +47,7 @@ class TestPreInvocationTemplateValidation:
         """
         import time
 
-        from src.des.application.validator import TemplateValidator
+        from des.application.validator import TemplateValidator
 
         # Arrange: Create prompt with all 8 mandatory sections from template
         prompt_with_all_sections = valid_prompt_v3()
@@ -87,7 +87,7 @@ class TestPreInvocationTemplateValidation:
         )
 
         # Act: Run pre-invocation validation
-        from src.des.application.validator import TemplateValidator
+        from des.application.validator import TemplateValidator
 
         validator = TemplateValidator()
         validation_result = validator.validate_prompt(prompt_missing_phase)
@@ -147,7 +147,7 @@ class TestPreInvocationTemplateValidation:
         """
 
         # Act: Run pre-invocation validation
-        from src.des.application.validator import TemplateValidator
+        from des.application.validator import TemplateValidator
 
         validator = TemplateValidator()
         validation_result = validator.validate_prompt(prompt_missing_section)
@@ -218,7 +218,7 @@ Record phase outcomes in step file
 Turn budget: approximately 50 turns"""
 
         # Act: Run pre-invocation validation
-        from src.des.application.validator import TemplateValidator
+        from des.application.validator import TemplateValidator
 
         validator = TemplateValidator()
         validation_result = validator.validate_prompt(_prompt_with_multiple_errors)
@@ -258,7 +258,7 @@ Turn budget: approximately 50 turns"""
         # Act: Measure validation performance
         import time
 
-        from src.des.application.validator import TemplateValidator
+        from des.application.validator import TemplateValidator
 
         validator = TemplateValidator()
         start_time = time.perf_counter()
@@ -321,7 +321,7 @@ Turn budget: approximately 50 turns"""
         """
 
         # Act: Run pre-invocation validation
-        from src.des.application.validator import TemplateValidator
+        from des.application.validator import TemplateValidator
 
         validator = TemplateValidator()
         validation_result = validator.validate_prompt(prompt_malformed_marker)
@@ -363,8 +363,8 @@ class TestOrchestratorIntegration:
         This test would FAIL if the import or delegation is missing.
         """
         # Arrange: Create orchestrator with REAL validator for integration testing
-        from src.des.application.orchestrator import DESOrchestrator
-        from src.des.application.validator import TemplateValidator
+        from des.application.orchestrator import DESOrchestrator
+        from des.application.validator import TemplateValidator
 
         orchestrator = DESOrchestrator(
             hook=mocked_hook,
@@ -395,8 +395,8 @@ class TestOrchestratorIntegration:
         through the orchestrator, not just returning success by default.
         """
         # Arrange: Create orchestrator with REAL validator for integration testing
-        from src.des.application.orchestrator import DESOrchestrator
-        from src.des.application.validator import TemplateValidator
+        from des.application.orchestrator import DESOrchestrator
+        from des.application.validator import TemplateValidator
 
         orchestrator = DESOrchestrator(
             hook=mocked_hook,
@@ -451,7 +451,7 @@ class TestOrchestratorSubagentStopHook:
         Business Value: Ensures proper resource cleanup preventing memory leaks
         and zombie processes from incomplete subagent lifecycle management.
         """
-        from src.des.application.orchestrator import DESOrchestrator
+        from des.application.orchestrator import DESOrchestrator
 
         orchestrator = DESOrchestrator(
             hook=mocked_hook,

@@ -12,6 +12,7 @@ Step 04-02: Selective Installation and Uninstallation
 from unittest.mock import Mock
 
 import pytest
+
 from scripts.install.plugins.base import InstallContext, PluginResult
 from scripts.install.plugins.registry import PluginRegistry
 

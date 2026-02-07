@@ -15,7 +15,7 @@ Test Coverage:
 - 100% code coverage for helper methods
 """
 
-from src.des.domain.timeout_instruction_template import TimeoutInstructionTemplate
+from des.domain.timeout_instruction_template import TimeoutInstructionTemplate
 
 
 class TestRenderTurnBudget:

@@ -154,11 +154,13 @@ class RichLogger:
         self._write_to_file("STEP", message)
 
     @contextmanager
-    def progress_spinner(self, message: str):
+    def progress_spinner(self, message: str, spinner_style: str = "dots12"):
         """Context manager for showing a spinner during long operations.
 
         Args:
             message: Message to display alongside the spinner.
+            spinner_style: Rich spinner style name (e.g. dots, line, moon, earth,
+                dots12, aesthetic). Defaults to "dots12".
 
         Yields:
             None
@@ -177,7 +179,8 @@ class RichLogger:
         try:
             from rich.status import Status
 
-            with Status(message, console=self.console, spinner="dots"):
+            self._write_to_file("STEP", message)
+            with Status(message, console=self.console, spinner=spinner_style):
                 yield
         except ImportError:
             # Fallback if Status not available
@@ -323,8 +326,13 @@ class PlainLogger:
         self._log("STEP", message)
 
     @contextmanager
-    def progress_spinner(self, message: str):
-        """No-op spinner for plain logger."""
+    def progress_spinner(self, message: str, spinner_style: str = "dots12"):
+        """No-op spinner for plain logger.
+
+        Args:
+            message: Message to display.
+            spinner_style: Ignored in PlainLogger (kept for interface consistency).
+        """
         self.step(message)
         yield
 
@@ -424,8 +432,13 @@ class SilentLogger:
         self._log("STEP", message)
 
     @contextmanager
-    def progress_spinner(self, message: str):
-        """No-op spinner for silent logger."""
+    def progress_spinner(self, message: str, spinner_style: str = "dots12"):
+        """No-op spinner for silent logger.
+
+        Args:
+            message: Message to display.
+            spinner_style: Ignored in SilentLogger (kept for interface consistency).
+        """
         self._log("STEP", message)
         yield
 

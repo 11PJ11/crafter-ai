@@ -2,7 +2,7 @@
 
 import sys
 
-from src.des.domain.turn_counter import TurnCounter
+from des.domain.turn_counter import TurnCounter
 
 
 class TestTurnCounter:

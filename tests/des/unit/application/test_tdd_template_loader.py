@@ -5,7 +5,7 @@ Tests the Single Source of Truth pattern - loading TDD phase definitions
 from canonical template instead of hardcoding them.
 """
 
-from src.des.application.tdd_template_loader import (
+from des.application.tdd_template_loader import (
     get_expected_phase_count,
     get_phase_execution_log_template,
     get_schema_version,

@@ -32,7 +32,7 @@ class CommandsPlugin(InstallationPlugin):
             PluginResult indicating success or failure of installation
         """
         try:
-            context.logger.info("Installing commands plugin...")
+            context.logger.info("  📦 Installing commands...")
 
             # Determine source and target directories
             commands_source = context.framework_source / "commands"
@@ -63,7 +63,7 @@ class CommandsPlugin(InstallationPlugin):
                     installed_files.append(str(target))
 
             copied_count = PathUtils.count_files(commands_target, "*.md")
-            context.logger.info(f"Installed {copied_count} command files")
+            context.logger.info(f"  ✅ Commands installed ({copied_count} files)")
 
             return PluginResult(
                 success=True,
@@ -72,7 +72,7 @@ class CommandsPlugin(InstallationPlugin):
                 installed_files=installed_files,
             )
         except Exception as e:
-            context.logger.error(f"Failed to install commands: {e!s}")
+            context.logger.error(f"  ❌ Failed to install commands: {e}")
             return PluginResult(
                 success=False,
                 plugin_name=self.name,
@@ -90,7 +90,7 @@ class CommandsPlugin(InstallationPlugin):
             PluginResult indicating verification success or failure
         """
         try:
-            context.logger.info("Verifying commands installation...")
+            context.logger.info("  🔎 Verifying commands...")
 
             target_commands_dir = context.claude_dir / "commands" / "nw"
 
@@ -113,7 +113,7 @@ class CommandsPlugin(InstallationPlugin):
                     errors=["No .md files in target directory"],
                 )
 
-            context.logger.info(f"Verified {len(command_files)} command files")
+            context.logger.info(f"  ✅ Verified {len(command_files)} command files")
 
             return PluginResult(
                 success=True,
@@ -121,7 +121,7 @@ class CommandsPlugin(InstallationPlugin):
                 message=f"Commands verification passed ({len(command_files)} files)",
             )
         except Exception as e:
-            context.logger.error(f"Failed to verify commands: {e!s}")
+            context.logger.error(f"  ❌ Failed to verify commands: {e}")
             return PluginResult(
                 success=False,
                 plugin_name=self.name,

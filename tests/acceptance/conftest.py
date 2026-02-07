@@ -76,7 +76,7 @@ def des_orchestrator(
     Returns:
         DESOrchestrator: Configured orchestrator with mocked dependencies
     """
-    from src.des.application.orchestrator import DESOrchestrator
+    from des.application.orchestrator import DESOrchestrator
 
     return DESOrchestrator(
         hook=mocked_hook,

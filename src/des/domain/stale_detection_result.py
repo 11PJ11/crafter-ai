@@ -26,7 +26,7 @@ Usage:
 
 from typing import Any
 
-from src.des.domain.stale_execution import StaleExecution
+from des.domain.stale_execution import StaleExecution
 
 
 class StaleDetectionResult:

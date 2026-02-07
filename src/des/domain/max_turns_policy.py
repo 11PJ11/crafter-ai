@@ -59,7 +59,11 @@ class MaxTurnsPolicy:
         if max_turns is None:
             return PolicyResult(is_valid=False, reason=self.MISSING_REASON)
 
-        if not isinstance(max_turns, int) or max_turns < self.MIN_TURNS or max_turns > self.MAX_TURNS:
+        if (
+            not isinstance(max_turns, int)
+            or max_turns < self.MIN_TURNS
+            or max_turns > self.MAX_TURNS
+        ):
             reason = self.INVALID_REASON_TEMPLATE.format(
                 min=self.MIN_TURNS,
                 max=self.MAX_TURNS,

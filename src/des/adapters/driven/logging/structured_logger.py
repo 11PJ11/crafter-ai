@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 from typing import Any, TextIO
 
-from src.des.ports.driven_ports.logging_port import LoggingPort
+from des.ports.driven_ports.logging_port import LoggingPort
 
 
 class StructuredLogger(LoggingPort):

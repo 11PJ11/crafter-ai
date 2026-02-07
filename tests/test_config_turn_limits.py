@@ -33,7 +33,7 @@ class TestConfigLoaderTurnLimits:
 
         try:
             # When: ConfigLoader loads the configuration
-            from src.des.application.config_loader import ConfigLoader
+            from des.application.config_loader import ConfigLoader
 
             loader = ConfigLoader(config_path)
 
@@ -55,7 +55,7 @@ class TestConfigLoaderTurnLimits:
 
         try:
             # When: ConfigLoader requests unknown task type
-            from src.des.application.config_loader import ConfigLoader
+            from des.application.config_loader import ConfigLoader
 
             loader = ConfigLoader(config_path)
 
@@ -76,7 +76,7 @@ class TestConfigLoaderTurnLimits:
 
         try:
             # When/Then: ConfigLoader raises validation error
-            from src.des.application.config_loader import (
+            from des.application.config_loader import (
                 ConfigLoader,
                 ConfigValidationError,
             )
@@ -89,7 +89,7 @@ class TestConfigLoaderTurnLimits:
     def test_handles_missing_config_file_gracefully(self):
         """ConfigLoader handles missing config file with sensible defaults."""
         # Given: Non-existent config file path
-        from src.des.application.config_loader import ConfigLoader
+        from des.application.config_loader import ConfigLoader
 
         # When: ConfigLoader initialized with missing file
         loader = ConfigLoader("/nonexistent/path/config.json")

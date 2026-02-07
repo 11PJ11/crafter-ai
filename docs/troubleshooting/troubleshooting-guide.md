@@ -283,7 +283,7 @@ Include this information:
 ### Support Resources
 
 - **Documentation**: `README.md`
-- **GitHub Issues**: [https://github.com/11PJ11/crafter-ai/issues](https://github.com/11PJ11/crafter-ai/issues)
+- **GitHub Issues**: [https://github.com/nWave-ai/nWave/issues](https://github.com/nWave-ai/nWave/issues)
 - **Installation Logs**: `~/.claude/nwave-install.log`
 - **Backup Recovery**: `./scripts/install-nwave.sh --restore`
 

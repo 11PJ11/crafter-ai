@@ -1,4 +1,4 @@
-<!-- version: 1.4.1 -->
+<!-- version: 1.4.2 -->
 
 # nWave Installation Scripts
 
@@ -245,8 +245,8 @@ python scripts/install/enhanced_backup_system.py list
 
 ## Support
 
-- GitHub Issues: https://github.com/11PJ11/crafter-ai/issues
-- Documentation: https://github.com/11PJ11/crafter-ai
+- GitHub Issues: https://github.com/nWave-ai/nWave/issues
+- Documentation: https://github.com/nWave-ai/nWave
 
 ## License
 

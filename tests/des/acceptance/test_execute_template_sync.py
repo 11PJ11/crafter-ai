@@ -12,7 +12,7 @@ Business Value:
 
 import re
 
-from src.des.application.validator import TDDPhaseValidator
+from des.application.validator import TDDPhaseValidator
 
 
 class TestExecuteTemplateSync:

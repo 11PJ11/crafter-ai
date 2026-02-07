@@ -7,15 +7,15 @@ feature_name and step_id extracted from execution context.
 from datetime import datetime, timezone
 from pathlib import Path
 
-from src.des.application.subagent_stop_service import SubagentStopService
-from src.des.domain.phase_event import PhaseEventParser
-from src.des.domain.step_completion_validator import StepCompletionValidator
-from src.des.domain.tdd_schema import get_tdd_schema
-from src.des.ports.driven_ports.audit_log_writer import AuditEvent, AuditLogWriter
-from src.des.ports.driven_ports.execution_log_reader import ExecutionLogReader
-from src.des.ports.driven_ports.scope_checker import ScopeChecker, ScopeCheckResult
-from src.des.ports.driven_ports.time_provider_port import TimeProvider
-from src.des.ports.driver_ports.subagent_stop_port import SubagentStopContext
+from des.application.subagent_stop_service import SubagentStopService
+from des.domain.phase_event import PhaseEventParser
+from des.domain.step_completion_validator import StepCompletionValidator
+from des.domain.tdd_schema import get_tdd_schema
+from des.ports.driven_ports.audit_log_writer import AuditEvent, AuditLogWriter
+from des.ports.driven_ports.execution_log_reader import ExecutionLogReader
+from des.ports.driven_ports.scope_checker import ScopeChecker, ScopeCheckResult
+from des.ports.driven_ports.time_provider_port import TimeProvider
+from des.ports.driver_ports.subagent_stop_port import SubagentStopContext
 
 
 class MockAuditWriter(AuditLogWriter):
@@ -47,13 +47,15 @@ class MockExecutionLogReader(ExecutionLogReader):
         return self._project_id
 
     def read_step_events(self, log_path: str, step_id: str):
-        return [e for e in (self._parser.parse(s) for s in self._events) if e is not None]
+        return [
+            e for e in (self._parser.parse(s) for s in self._events) if e is not None
+        ]
 
 
 class MockScopeChecker(ScopeChecker):
     """Mock scope checker."""
 
-    def __init__(self, violations: list[str] = None):
+    def __init__(self, violations: list[str] | None = None):
         self._violations = violations or []
 
     def check_scope(

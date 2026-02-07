@@ -7,7 +7,7 @@ Tests verify that recovery suggestions are formatted consistently with:
 - Actionable element: Specific command or file path
 """
 
-from src.des.application.recovery_guidance_handler import SuggestionFormatter
+from des.application.recovery_guidance_handler import SuggestionFormatter
 
 
 class TestSuggestionFormatterBasics:
@@ -222,7 +222,7 @@ class TestSuggestionFormatterIntegration:
 
     def test_formatter_available_in_recovery_handler(self):
         """SuggestionFormatter should be integrated with RecoveryGuidanceHandler."""
-        from src.des.application.recovery_guidance_handler import (
+        from des.application.recovery_guidance_handler import (
             RecoveryGuidanceHandler,
         )
 
@@ -235,7 +235,7 @@ class TestSuggestionFormatterIntegration:
 
     def test_recovery_handler_format_suggestion_works(self):
         """RecoveryGuidanceHandler.format_suggestion should format correctly."""
-        from src.des.application.recovery_guidance_handler import (
+        from des.application.recovery_guidance_handler import (
             RecoveryGuidanceHandler,
         )
 

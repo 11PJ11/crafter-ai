@@ -17,7 +17,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import ClassVar, Protocol
+from typing import Protocol
 
 
 class TDDSchemaProtocol(Protocol):
@@ -97,8 +97,9 @@ class TDDSchemaLoader:
         module_resolved_str = str(module_file.resolve()).replace("\\", "/")
 
         is_installed = (
-            (".claude" in module_str or ".claude" in module_resolved_str) and
-            ("lib/python/des" in module_str or "lib/python/des" in module_resolved_str)
+            ".claude" in module_str or ".claude" in module_resolved_str
+        ) and (
+            "lib/python/des" in module_str or "lib/python/des" in module_resolved_str
         )
 
         if is_installed:
@@ -189,7 +190,9 @@ class TDDSchemaLoader:
     def _extract_tdd_phases(self, raw_data: dict) -> tuple[str, ...]:
         """Extract ordered TDD phase names from schema."""
         phase_log = raw_data.get("tdd_cycle", {}).get("phase_execution_log", [])
-        return tuple(phase["phase_name"] for phase in phase_log if "phase_name" in phase)
+        return tuple(
+            phase["phase_name"] for phase in phase_log if "phase_name" in phase
+        )
 
     def _extract_valid_statuses(self, raw_data: dict) -> tuple[str, ...]:
         """Extract valid phase statuses from schema."""
@@ -227,9 +230,8 @@ class TDDSchemaLoader:
         Terminal phases represent successful completion and cannot have FAIL outcome.
         Example: COMMIT phase must always PASS, as FAIL indicates incomplete work.
         """
-        terminal_config = (
-            raw_data.get("phase_validation_rules", {})
-            .get("terminal_phases", {})
+        terminal_config = raw_data.get("phase_validation_rules", {}).get(
+            "terminal_phases", {}
         )
         phases = terminal_config.get("phases", [])
         return tuple(phases)

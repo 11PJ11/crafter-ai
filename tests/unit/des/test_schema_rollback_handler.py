@@ -14,7 +14,7 @@ import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from src.des.application.schema_rollback_handler import (
+from des.application.schema_rollback_handler import (
     PHASES_V1_FULL,
     PHASES_V2_OPTIMIZED,
     SchemaRollbackHandler,

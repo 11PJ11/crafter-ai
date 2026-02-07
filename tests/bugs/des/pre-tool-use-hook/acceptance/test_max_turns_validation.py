@@ -281,7 +281,7 @@ def claude_code_hook_stdin(tmp_path):
 
     def invoke_hook(command: str, stdin_data: str) -> tuple[int, str, str]:
         """Invoke hook adapter function directly with mocked I/O."""
-        from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
+        from des.adapters.drivers.hooks.claude_code_hook_adapter import (
             handle_pre_tool_use,
         )
 

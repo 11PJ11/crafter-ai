@@ -10,14 +10,15 @@ All domain classes are pure (no I/O), so tests are fast and deterministic.
 """
 
 import pytest
-from src.des.domain.des_marker_parser import DesMarkerParser, DesMarkers
-from src.des.domain.max_turns_policy import MaxTurnsPolicy, PolicyResult
-from src.des.domain.phase_event import PhaseEvent, PhaseEventParser
-from src.des.domain.step_completion_validator import (
+
+from des.domain.des_marker_parser import DesMarkerParser, DesMarkers
+from des.domain.max_turns_policy import MaxTurnsPolicy, PolicyResult
+from des.domain.phase_event import PhaseEvent, PhaseEventParser
+from des.domain.step_completion_validator import (
     CompletionResult,
     StepCompletionValidator,
 )
-from src.des.domain.tdd_schema import TDDSchema
+from des.domain.tdd_schema import TDDSchema
 
 
 # ---------------------------------------------------------------------------

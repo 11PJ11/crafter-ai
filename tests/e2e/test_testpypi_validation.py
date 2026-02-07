@@ -74,7 +74,7 @@ class TestTestPyPIValidationScript:
             ],
             capture_output=True,
             text=True,
-            timeout=10,  # Quick timeout for parsing test
+            timeout=30,  # Allow time for subprocess startup + pip on Windows
         )
         # Should either work or fail on installation (not argument parsing)
         # If it fails on argument parsing, returncode would be 2
@@ -98,7 +98,7 @@ class TestTestPyPIValidationScript:
             ],
             capture_output=True,
             text=True,
-            timeout=10,
+            timeout=30,  # Allow time for subprocess startup + pip on Windows
         )
         # Should not fail on argument parsing
         assert result.returncode != 2, f"Argument parsing failed: {result.stderr}"

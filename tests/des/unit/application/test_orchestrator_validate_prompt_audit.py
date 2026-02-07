@@ -13,14 +13,14 @@ fields rather than data dict entries.
 
 from unittest.mock import Mock, patch
 
-from src.des.adapters.driven.logging.audit_events import EventType
+from des.adapters.driven.logging.audit_events import EventType
 
 
 def _patch_audit_writer_and_config():
     """Create patches for JsonlAuditLogWriter and DESConfig in orchestrator module.
 
     The orchestrator creates these locally in validate_prompt():
-        from src.des.adapters.driven.config.des_config import DESConfig
+        from des.adapters.driven.config.des_config import DESConfig
         config = DESConfig()
         if config.audit_logging_enabled:
             writer = JsonlAuditLogWriter()
@@ -40,11 +40,11 @@ def _patch_audit_writer_and_config():
     mock_config_cls.return_value = mock_config
 
     writer_patch = patch(
-        "src.des.application.orchestrator.JsonlAuditLogWriter",
+        "des.application.orchestrator.JsonlAuditLogWriter",
         mock_writer_cls,
     )
     config_patch = patch(
-        "src.des.adapters.driven.config.des_config.DESConfig",
+        "des.adapters.driven.config.des_config.DESConfig",
         mock_config_cls,
     )
 
@@ -97,11 +97,11 @@ class TestValidatePromptAuditLogging:
         THEN HOOK_PRE_TASK_BLOCKED audit event is logged with rejection reason
         """
         # Arrange
-        from src.des.adapters.drivers.validators.mocked_validator import (
+        from des.adapters.drivers.validators.mocked_validator import (
             MockedTemplateValidator,
         )
-        from src.des.application.orchestrator import DESOrchestrator
-        from src.des.ports.driver_ports.validator_port import ValidationResult
+        from des.application.orchestrator import DESOrchestrator
+        from des.ports.driver_ports.validator_port import ValidationResult
 
         # Create validator that returns failure
         failing_validator = MockedTemplateValidator(
@@ -240,11 +240,11 @@ class TestValidatePromptAuditLogging:
         THEN rejection_reason field contains detailed error information
         """
         # Arrange
-        from src.des.adapters.drivers.validators.mocked_validator import (
+        from des.adapters.drivers.validators.mocked_validator import (
             MockedTemplateValidator,
         )
-        from src.des.application.orchestrator import DESOrchestrator
-        from src.des.ports.driver_ports.validator_port import ValidationResult
+        from des.application.orchestrator import DESOrchestrator
+        from des.ports.driver_ports.validator_port import ValidationResult
 
         # Create validator that returns failure
         failing_validator = MockedTemplateValidator(
@@ -291,7 +291,7 @@ class TestValidatePromptAuditLogging:
         THEN no audit event is logged
         """
         # Arrange
-        from src.des.application.orchestrator import DESOrchestrator
+        from des.application.orchestrator import DESOrchestrator
 
         des_orchestrator = DESOrchestrator(
             hook=mocked_hook,
@@ -317,11 +317,11 @@ class TestValidatePromptAuditLogging:
 
         with (
             patch(
-                "src.des.application.orchestrator.JsonlAuditLogWriter",
+                "des.application.orchestrator.JsonlAuditLogWriter",
                 mock_writer_cls,
             ),
             patch(
-                "src.des.adapters.driven.config.des_config.DESConfig",
+                "des.adapters.driven.config.des_config.DESConfig",
                 mock_config_cls,
             ),
         ):

@@ -5,6 +5,7 @@ import zipfile
 from pathlib import Path
 
 import pytest
+
 from scripts.framework.release_packager import (
     ArchiveCreator,
     BuildValidator,

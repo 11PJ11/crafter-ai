@@ -32,7 +32,7 @@ class TemplatesPlugin(InstallationPlugin):
             PluginResult indicating success or failure of installation
         """
         try:
-            context.logger.info("Installing templates plugin...")
+            context.logger.info("  📦 Installing templates...")
 
             # Determine source directory (prefer templates_dir from context)
             templates_source = context.templates_dir
@@ -71,7 +71,7 @@ class TemplatesPlugin(InstallationPlugin):
                     installed_files.append(str(target))
 
             copied_count = PathUtils.count_files(templates_target, "*.yaml")
-            context.logger.info(f"Installed {copied_count} template files")
+            context.logger.info(f"  ✅ Templates installed ({copied_count} files)")
 
             return PluginResult(
                 success=True,
@@ -80,7 +80,7 @@ class TemplatesPlugin(InstallationPlugin):
                 installed_files=installed_files,
             )
         except Exception as e:
-            context.logger.error(f"Failed to install templates: {e!s}")
+            context.logger.error(f"  ❌ Failed to install templates: {e}")
             return PluginResult(
                 success=False,
                 plugin_name=self.name,
@@ -98,7 +98,7 @@ class TemplatesPlugin(InstallationPlugin):
             PluginResult indicating verification success or failure
         """
         try:
-            context.logger.info("Verifying templates installation...")
+            context.logger.info("  🔎 Verifying templates...")
 
             target_templates_dir = context.claude_dir / "templates"
 
@@ -125,7 +125,7 @@ class TemplatesPlugin(InstallationPlugin):
                     errors=["No .yaml or .md files in target directory"],
                 )
 
-            context.logger.info(f"Verified {len(template_files)} template files")
+            context.logger.info(f"  ✅ Verified {len(template_files)} template files")
 
             return PluginResult(
                 success=True,
@@ -133,7 +133,7 @@ class TemplatesPlugin(InstallationPlugin):
                 message=f"Templates verification passed ({len(template_files)} files)",
             )
         except Exception as e:
-            context.logger.error(f"Failed to verify templates: {e!s}")
+            context.logger.error(f"  ❌ Failed to verify templates: {e}")
             return PluginResult(
                 success=False,
                 plugin_name=self.name,

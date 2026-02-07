@@ -16,24 +16,21 @@
 #   - TestPyPI install must succeed (with linear backoff retry)
 #   - Clear failure diagnostics with suggested fixes
 #
-# Triggers: Pull requests to main/master branches
+# Triggers: Manual only (disabled pending nWave distribution strategy rethink)
 #
 # =============================================================================
 
 name: TestPyPI Validation
 
 on:
-  pull_request:
-    branches:
-      - main
-      - master
+  workflow_dispatch:  # Manual trigger only until distribution strategy is defined
 
 permissions:
   contents: read
   id-token: write  # Required for trusted publishing to TestPyPI
 
 env:
-  PYTHON_VERSION: '3.10'
+  PYTHON_VERSION: '3.11'
 
 jobs:
   # ===========================================================================
@@ -174,40 +171,13 @@ jobs:
       - name: List artifacts to publish
         run: ls -la dist/
 
-      - name: Publish to TestPyPI (with retry)
-        id: publish
-        env:
-          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        run: |
-          # Retry configuration: exponential backoff 30s, 60s, 120s
-          MAX_RETRIES=3
-          RETRY_COUNT=0
-          BACKOFF_SECONDS=30
-
-          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-            echo "Attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES..."
-
-            if pip install twine && twine upload --repository-url https://test.pypi.org/legacy/ dist/* --skip-existing --verbose; then
-              echo "upload_success=true" >> $GITHUB_OUTPUT
-              echo "retry_count=$RETRY_COUNT" >> $GITHUB_OUTPUT
-              echo "Upload successful!"
-              exit 0
-            fi
-
-            RETRY_COUNT=$((RETRY_COUNT + 1))
-
-            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
-              echo "Upload failed. Retrying in ${BACKOFF_SECONDS} seconds..."
-              sleep $BACKOFF_SECONDS
-              # Exponential backoff: double the wait time
-              BACKOFF_SECONDS=$((BACKOFF_SECONDS * 2))
-            fi
-          done
-
-          echo "upload_success=false" >> $GITHUB_OUTPUT
-          echo "retry_count=$RETRY_COUNT" >> $GITHUB_OUTPUT
-          echo "::error::TestPyPI upload failed after $MAX_RETRIES attempts"
-          exit 1
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          skip-existing: true
+          verbose: true
 
       - name: Upload failure summary
         if: failure()
@@ -215,8 +185,6 @@ jobs:
           echo "## TestPyPI Upload Failed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Quality Gate: testpypi_upload" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Status:** FAILED after 3 retries with exponential backoff" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Suggested Fix:**" >> $GITHUB_STEP_SUMMARY
           echo "- Check TEST_PYPI_API_TOKEN secret is valid and has upload permissions" >> $GITHUB_STEP_SUMMARY

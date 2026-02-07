@@ -13,7 +13,7 @@ def _patch_log_audit_event():
     """Patch _log_audit_event at module level to capture calls."""
     mock_log = Mock()
     log_patch = patch(
-        "src.des.application.orchestrator._log_audit_event",
+        "des.application.orchestrator._log_audit_event",
         mock_log,
     )
     return log_patch, mock_log
@@ -22,9 +22,7 @@ def _patch_log_audit_event():
 class TestRenderPromptAuditFeatureName:
     """AC1-2: render_prompt passes feature_name (project_id) and step_id to _log_audit_event."""
 
-    def test_render_prompt_passes_feature_name_from_project_id(
-        self, des_orchestrator
-    ):
+    def test_render_prompt_passes_feature_name_from_project_id(self, des_orchestrator):
         """AC1: render_prompt accepts project_id and passes it as feature_name
         to _log_audit_event for TASK_INVOCATION_STARTED event."""
         log_patch, mock_log = _patch_log_audit_event()
@@ -39,7 +37,8 @@ class TestRenderPromptAuditFeatureName:
 
             # Find the TASK_INVOCATION_STARTED call
             started_calls = [
-                c for c in mock_log.call_args_list
+                c
+                for c in mock_log.call_args_list
                 if c[0][0] == "TASK_INVOCATION_STARTED"
             ]
             assert len(started_calls) == 1, (
@@ -49,9 +48,7 @@ class TestRenderPromptAuditFeatureName:
             call_kwargs = started_calls[0][1]
             assert call_kwargs.get("feature_name") == "audit-log-refactor"
 
-    def test_render_prompt_passes_step_id_to_started_event(
-        self, des_orchestrator
-    ):
+    def test_render_prompt_passes_step_id_to_started_event(self, des_orchestrator):
         """AC2: TASK_INVOCATION_STARTED event logs both feature_name and step_id."""
         log_patch, mock_log = _patch_log_audit_event()
 
@@ -64,7 +61,8 @@ class TestRenderPromptAuditFeatureName:
             )
 
             started_calls = [
-                c for c in mock_log.call_args_list
+                c
+                for c in mock_log.call_args_list
                 if c[0][0] == "TASK_INVOCATION_STARTED"
             ]
             call_kwargs = started_calls[0][1]
@@ -87,7 +85,8 @@ class TestRenderPromptAuditFeatureName:
             )
 
             validated_calls = [
-                c for c in mock_log.call_args_list
+                c
+                for c in mock_log.call_args_list
                 if c[0][0] == "TASK_INVOCATION_VALIDATED"
             ]
             assert len(validated_calls) == 1, (
@@ -112,7 +111,8 @@ class TestRenderPromptAuditFeatureName:
             )
 
             started_calls = [
-                c for c in mock_log.call_args_list
+                c
+                for c in mock_log.call_args_list
                 if c[0][0] == "TASK_INVOCATION_STARTED"
             ]
             call_kwargs = started_calls[0][1]

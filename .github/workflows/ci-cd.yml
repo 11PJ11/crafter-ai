@@ -361,7 +361,7 @@ jobs:
           pipenv run pytest tests/ \
             --verbose \
             --tb=short \
-            --cov=. \
+            --cov \
             --cov-report=term-missing \
             --cov-report=xml \
             --cov-report=html \

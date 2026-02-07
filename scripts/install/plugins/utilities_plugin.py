@@ -36,7 +36,7 @@ class UtilitiesPlugin(InstallationPlugin):
             PluginResult indicating success or failure of installation
         """
         try:
-            context.logger.info("Installing utilities plugin...")
+            context.logger.info("  📦 Installing utilities...")
 
             # Determine source and target directories
             scripts_source = context.project_root / "scripts"
@@ -66,22 +66,22 @@ class UtilitiesPlugin(InstallationPlugin):
                 if VersionUtils.compare_versions(source_ver, target_ver) > 0:
                     shutil.copy2(source_script, target_script)
                     context.logger.info(
-                        f"Upgraded {script_name} ({target_ver} -> {source_ver})"
+                        f"  📁 {script_name} upgraded ({target_ver} \u2192 {source_ver})"
                     )
                     installed_files.append(str(target_script))
                     installed_count += 1
                 elif not target_script.exists():
                     shutil.copy2(source_script, target_script)
-                    context.logger.info(f"Installed {script_name} (v{source_ver})")
+                    context.logger.info(f"  📁 {script_name} installed (v{source_ver})")
                     installed_files.append(str(target_script))
                     installed_count += 1
                 else:
                     context.logger.info(
-                        f"{script_name} already up-to-date (v{target_ver})"
+                        f"  📁 {script_name} up-to-date (v{target_ver})"
                     )
 
             total_scripts = PathUtils.count_files(scripts_target, "*.py")
-            context.logger.info(f"Installed {installed_count} utility script(s)")
+            context.logger.info(f"  ✅ Utilities installed ({installed_count} scripts)")
 
             return PluginResult(
                 success=True,
@@ -90,7 +90,7 @@ class UtilitiesPlugin(InstallationPlugin):
                 installed_files=installed_files,
             )
         except Exception as e:
-            context.logger.error(f"Failed to install utilities: {e!s}")
+            context.logger.error(f"  ❌ Failed to install utilities: {e}")
             return PluginResult(
                 success=False,
                 plugin_name=self.name,
@@ -108,7 +108,7 @@ class UtilitiesPlugin(InstallationPlugin):
             PluginResult indicating verification success or failure
         """
         try:
-            context.logger.info("Verifying utilities installation...")
+            context.logger.info("  🔎 Verifying utilities...")
 
             target_scripts_dir = context.claude_dir / "scripts"
 
@@ -132,7 +132,7 @@ class UtilitiesPlugin(InstallationPlugin):
                     errors=["No .py files in target directory"],
                 )
 
-            context.logger.info(f"Verified {len(utility_scripts)} utility scripts")
+            context.logger.info(f"  ✅ Verified {len(utility_scripts)} utility scripts")
 
             return PluginResult(
                 success=True,
@@ -140,7 +140,7 @@ class UtilitiesPlugin(InstallationPlugin):
                 message=f"Utilities verification passed ({len(utility_scripts)} scripts)",
             )
         except Exception as e:
-            context.logger.error(f"Failed to verify utilities: {e!s}")
+            context.logger.error(f"  ❌ Failed to verify utilities: {e}")
             return PluginResult(
                 success=False,
                 plugin_name=self.name,

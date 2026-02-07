@@ -22,7 +22,7 @@ class TestInvocationLimitsValidator:
         step_file.write_text(json.dumps(step_data))
 
         # WHEN
-        from src.des.domain.invocation_limits_validator import InvocationLimitsValidator
+        from des.domain.invocation_limits_validator import InvocationLimitsValidator
 
         validator = InvocationLimitsValidator()
         result = validator.validate_limits(step_file)
@@ -49,7 +49,7 @@ class TestInvocationLimitsValidator:
         step_file.write_text(json.dumps(step_data))
 
         # WHEN
-        from src.des.domain.invocation_limits_validator import InvocationLimitsValidator
+        from des.domain.invocation_limits_validator import InvocationLimitsValidator
 
         validator = InvocationLimitsValidator()
         result = validator.validate_limits(step_file)
@@ -73,7 +73,7 @@ class TestInvocationLimitsValidator:
         step_file.write_text(json.dumps(step_data))
 
         # WHEN
-        from src.des.domain.invocation_limits_validator import InvocationLimitsValidator
+        from des.domain.invocation_limits_validator import InvocationLimitsValidator
 
         validator = InvocationLimitsValidator()
         result = validator.validate_limits(step_file)
@@ -101,7 +101,7 @@ class TestInvocationLimitsValidator:
         step_file.write_text(json.dumps(step_data))
 
         # WHEN
-        from src.des.domain.invocation_limits_validator import InvocationLimitsValidator
+        from des.domain.invocation_limits_validator import InvocationLimitsValidator
 
         validator = InvocationLimitsValidator()
         result = validator.validate_limits(step_file)
@@ -137,7 +137,7 @@ class TestInvocationLimitsValidator:
         step_file.write_text(json.dumps(step_data))
 
         # WHEN
-        from src.des.domain.invocation_limits_validator import InvocationLimitsValidator
+        from des.domain.invocation_limits_validator import InvocationLimitsValidator
 
         validator = InvocationLimitsValidator()
         result = validator.validate_limits(step_file)
@@ -173,7 +173,7 @@ class TestInvocationLimitsValidator:
         step_file.write_text(json.dumps(step_data))
 
         # WHEN
-        from src.des.domain.invocation_limits_validator import InvocationLimitsValidator
+        from des.domain.invocation_limits_validator import InvocationLimitsValidator
 
         validator = InvocationLimitsValidator()
         result = validator.validate_limits(step_file)
@@ -194,7 +194,7 @@ class TestInvocationLimitsValidator:
         step_file.write_text(json.dumps(step_data))
 
         # WHEN
-        from src.des.domain.invocation_limits_validator import InvocationLimitsValidator
+        from des.domain.invocation_limits_validator import InvocationLimitsValidator
 
         validator = InvocationLimitsValidator()
         result = validator.validate_limits(step_file)

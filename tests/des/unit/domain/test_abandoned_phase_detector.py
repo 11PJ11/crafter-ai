@@ -28,7 +28,7 @@ class TestAbandonedPhaseDetector:
 
         Business Value: Foundation test - ensures detector exists and is callable
         """
-        from src.des.domain.abandoned_phase_detector import AbandonedPhaseDetector
+        from des.domain.abandoned_phase_detector import AbandonedPhaseDetector
 
         detector = AbandonedPhaseDetector()
         assert detector is not None
@@ -48,7 +48,7 @@ class TestAbandonedPhaseDetector:
         Business Value: Detects stalled phases that never started execution
         Timeout Threshold: 30 minutes (configurable)
         """
-        from src.des.domain.abandoned_phase_detector import AbandonedPhaseDetector
+        from des.domain.abandoned_phase_detector import AbandonedPhaseDetector
 
         detector = AbandonedPhaseDetector()
 
@@ -87,7 +87,7 @@ class TestAbandonedPhaseDetector:
         Business Value: Detects phases that started but made no progress
         Stalled Threshold: No turn count change for 20 minutes
         """
-        from src.des.domain.abandoned_phase_detector import AbandonedPhaseDetector
+        from des.domain.abandoned_phase_detector import AbandonedPhaseDetector
 
         detector = AbandonedPhaseDetector()
 
@@ -131,7 +131,7 @@ class TestAbandonedPhaseDetector:
 
         Business Value: Clear recovery guidance for junior developers
         """
-        from src.des.domain.abandoned_phase_detector import AbandonedPhaseDetector
+        from des.domain.abandoned_phase_detector import AbandonedPhaseDetector
 
         detector = AbandonedPhaseDetector()
 
@@ -178,7 +178,7 @@ class TestAbandonedPhaseDetector:
         Business Value: Robust handling of malformed phase records
         Edge Case: Corrupted phase data
         """
-        from src.des.domain.abandoned_phase_detector import AbandonedPhaseDetector
+        from des.domain.abandoned_phase_detector import AbandonedPhaseDetector
 
         detector = AbandonedPhaseDetector()
 
@@ -216,7 +216,7 @@ class TestAbandonedPhaseDetector:
 
         Business Value: Prevents false positives - don't report in-progress work as abandoned
         """
-        from src.des.domain.abandoned_phase_detector import AbandonedPhaseDetector
+        from des.domain.abandoned_phase_detector import AbandonedPhaseDetector
 
         detector = AbandonedPhaseDetector()
         base_time = datetime.now(timezone.utc)

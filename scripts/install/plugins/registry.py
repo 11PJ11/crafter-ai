@@ -7,14 +7,21 @@ execution order while respecting dependencies.
 Includes rollback mechanism for handling plugin installation failures.
 """
 
+from __future__ import annotations
+
 import shutil
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from scripts.install.plugins.base import (
     InstallationPlugin,
     InstallContext,
     PluginResult,
 )
+
+
+if TYPE_CHECKING:
+    from scripts.install.install_utils import Logger
 
 
 class PluginRegistry:
@@ -26,11 +33,12 @@ class PluginRegistry:
     Provides rollback mechanism to restore system state on installation failure.
     """
 
-    def __init__(self):
+    def __init__(self, logger: Logger | None = None):
         """Initialize empty plugin registry."""
         self.plugins: dict[str, InstallationPlugin] = {}
         self._installed_files: list[Path | str] = []
         self._installed_plugins: list[str] = []
+        self._logger = logger
 
     def register(self, plugin: InstallationPlugin) -> None:
         """Register a plugin.
@@ -44,6 +52,8 @@ class PluginRegistry:
         if plugin.name in self.plugins:
             raise ValueError(f"Plugin '{plugin.name}' already registered")
         self.plugins[plugin.name] = plugin
+        if self._logger:
+            self._logger.info(f"  🧰 {plugin.name} added to the toolbox")
 
     def _detect_cycle_dfs(
         self,
@@ -181,10 +191,10 @@ class PluginRegistry:
                     self._installed_files.extend(result.installed_files)
             else:
                 # Log error details for debugging
-                context.logger.error(f"Plugin installation failed: {result.message}")
+                context.logger.error(f"  ❌ Plugin failed: {result.message}")
                 if result.errors:
                     for error in result.errors:
-                        context.logger.error(f"  - {error}")
+                        context.logger.error(f"    ❌ {error}")
                 break
 
         return results
@@ -204,7 +214,7 @@ class PluginRegistry:
         Args:
             context: InstallContext with shared installation utilities
         """
-        context.logger.info("Rolling back plugin installation...")
+        context.logger.info("  ♻️ Rolling back installation...")
 
         # Remove tracked installed files
         removed_count = 0
@@ -216,10 +226,10 @@ class PluginRegistry:
                     path.unlink()
                     removed_count += 1
                 except OSError as e:
-                    context.logger.warn(f"Could not remove file {path}: {e}")
+                    context.logger.warn(f"  ⚠️ Could not remove {path}: {e}")
 
         if removed_count > 0:
-            context.logger.info(f"Removed {removed_count} installed files")
+            context.logger.info(f"  ✅ Removed {removed_count} installed files")
 
         # Clean up empty directories created by plugins
         for plugin_name in reversed(self._installed_plugins):
@@ -229,13 +239,15 @@ class PluginRegistry:
                     # Only remove if directory is empty or was created by this plugin
                     if not any(plugin_dir.iterdir()):
                         plugin_dir.rmdir()
-                        context.logger.info(f"Removed empty directory: {plugin_dir}")
+                        context.logger.info(
+                            f"    ✅ Removed empty directory: {plugin_dir}"
+                        )
                 except OSError:
                     pass  # Directory not empty or cannot be removed
 
         # Restore from backup if BackupManager is available
         if context.backup_manager is not None:
-            context.logger.info("Restoring from backup...")
+            context.logger.info("  ⏳ Restoring from backup...")
             backup_dir = context.backup_manager.backup_dir
             if backup_dir and backup_dir.exists():
                 self._restore_from_backup(context, backup_dir)
@@ -244,7 +256,7 @@ class PluginRegistry:
         self._installed_files = []
         self._installed_plugins = []
 
-        context.logger.info("Rollback complete")
+        context.logger.info("  🍾 Rollback complete")
 
     def _restore_from_backup(self, context: InstallContext, backup_dir: Path) -> None:
         """Restore files from backup directory.
@@ -260,7 +272,7 @@ class PluginRegistry:
             if target_agents.exists():
                 shutil.rmtree(target_agents)
             shutil.copytree(backup_agents, target_agents)
-            context.logger.info("Restored agents directory from backup")
+            context.logger.info("  ✅ Agents restored from backup")
 
         # Restore commands directory if it exists in backup
         backup_commands = backup_dir / "commands"
@@ -269,7 +281,7 @@ class PluginRegistry:
             if target_commands.exists():
                 shutil.rmtree(target_commands)
             shutil.copytree(backup_commands, target_commands)
-            context.logger.info("Restored commands directory from backup")
+            context.logger.info("  ✅ Commands restored from backup")
 
     def verify_all(self, context: InstallContext) -> dict[str, PluginResult]:
         """Verify all plugins in dependency order.

@@ -6,7 +6,8 @@ and provides the expected TDD phase names, statuses, and skip prefixes.
 """
 
 import pytest
-from src.des.domain.tdd_schema import (
+
+from des.domain.tdd_schema import (
     TDDSchema,
     TDDSchemaLoader,
     get_tdd_schema,

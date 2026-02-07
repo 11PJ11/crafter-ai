@@ -14,7 +14,7 @@ Domain Language:
 import subprocess
 from unittest.mock import Mock, patch
 
-from src.des.adapters.driven.validation.git_scope_checker import GitScopeChecker
+from des.adapters.driven.validation.git_scope_checker import GitScopeChecker
 
 
 class TestGitScopeCheckerGitIntegration:

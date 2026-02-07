@@ -7,7 +7,7 @@ execution when stale IN_PROGRESS phases are detected.
 import json
 from datetime import datetime, timedelta, timezone
 
-from src.des.application.orchestrator import DESOrchestrator
+from des.application.orchestrator import DESOrchestrator
 
 
 class TestOrchestratorStaleCheckIntegration:

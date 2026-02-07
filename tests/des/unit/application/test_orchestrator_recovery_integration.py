@@ -15,7 +15,7 @@ import json
 import pytest
 
 # Note: Schema v1.x SubagentStopHook dropped per ADR-6. These tests need Schema v2.0 update.
-from src.des.application.recovery_guidance_handler import RecoveryGuidanceHandler
+from des.application.recovery_guidance_handler import RecoveryGuidanceHandler
 
 
 pytestmark = pytest.mark.skip(

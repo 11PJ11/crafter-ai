@@ -30,7 +30,7 @@ class AgentsPlugin(InstallationPlugin):
             PluginResult indicating success or failure of installation
         """
         try:
-            context.logger.info("Installing agents plugin...")
+            context.logger.info("  📦 Installing agents...")
 
             # Determine source and target directories
             source_agent_dir = context.project_root / "nWave" / "agents"
@@ -55,12 +55,12 @@ class AgentsPlugin(InstallationPlugin):
             # Select source: prefer dist if it has sufficient agents
             if dist_agent_count >= (source_agent_count % 2) and dist_agent_count > 5:
                 context.logger.info(
-                    f"Installing from built distribution ({dist_agent_count} agents)..."
+                    f"  ⏳ From distribution ({dist_agent_count} agents)..."
                 )
                 selected_source = dist_agent_dir
             else:
                 context.logger.info(
-                    f"Using source files ({source_agent_count} agents)..."
+                    f"  ⏳ From source ({source_agent_count} agents)..."
                 )
                 selected_source = source_agent_dir
 
@@ -72,7 +72,7 @@ class AgentsPlugin(InstallationPlugin):
             # Collect installed file paths
             installed_files = [str(f) for f in target_agent_dir.glob("*.md")]
 
-            context.logger.info(f"Installed {copied_count} agent files")
+            context.logger.info(f"  ✅ Agents installed ({copied_count} files)")
 
             return PluginResult(
                 success=True,
@@ -81,7 +81,7 @@ class AgentsPlugin(InstallationPlugin):
                 installed_files=installed_files,
             )
         except Exception as e:
-            context.logger.error(f"Failed to install agents: {e!s}")
+            context.logger.error(f"  ❌ Failed to install agents: {e}")
             return PluginResult(
                 success=False,
                 plugin_name=self.name,
@@ -99,7 +99,7 @@ class AgentsPlugin(InstallationPlugin):
             PluginResult indicating verification success or failure
         """
         try:
-            context.logger.info("Verifying agents installation...")
+            context.logger.info("  🔎 Verifying agents...")
 
             target_agent_dir = context.claude_dir / "agents" / "nw"
 
@@ -122,7 +122,7 @@ class AgentsPlugin(InstallationPlugin):
                     errors=["No .md files in target directory"],
                 )
 
-            context.logger.info(f"Verified {len(agent_files)} agent files")
+            context.logger.info(f"  ✅ Verified {len(agent_files)} agent files")
 
             return PluginResult(
                 success=True,
@@ -130,7 +130,7 @@ class AgentsPlugin(InstallationPlugin):
                 message=f"Agents verification passed ({len(agent_files)} files)",
             )
         except Exception as e:
-            context.logger.error(f"Failed to verify agents: {e!s}")
+            context.logger.error(f"  ❌ Failed to verify agents: {e}")
             return PluginResult(
                 success=False,
                 plugin_name=self.name,

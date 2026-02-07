@@ -12,7 +12,7 @@ Tests core functionality of the RecoveryGuidanceHandler class including:
 
 import json
 
-from src.des.application.recovery_guidance_handler import (
+from des.application.recovery_guidance_handler import (
     RecoveryGuidanceHandler,
     SuggestionFormatter,
 )
@@ -378,7 +378,7 @@ class TestJuniorDevFormatter:
 
     def test_junior_dev_formatter_exists(self):
         """JuniorDevFormatter class should be instantiable."""
-        from src.des.application.recovery_guidance_handler import JuniorDevFormatter
+        from des.application.recovery_guidance_handler import JuniorDevFormatter
 
         formatter = JuniorDevFormatter()
         assert formatter is not None
@@ -386,7 +386,7 @@ class TestJuniorDevFormatter:
 
     def test_simplifies_technical_terms(self):
         """Should replace technical jargon with simple explanations."""
-        from src.des.application.recovery_guidance_handler import JuniorDevFormatter
+        from des.application.recovery_guidance_handler import JuniorDevFormatter
 
         formatter = JuniorDevFormatter()
 
@@ -407,7 +407,7 @@ class TestJuniorDevFormatter:
 
     def test_adds_educational_context(self):
         """Should add educational explanations for why errors occur."""
-        from src.des.application.recovery_guidance_handler import JuniorDevFormatter
+        from des.application.recovery_guidance_handler import JuniorDevFormatter
 
         formatter = JuniorDevFormatter()
 
@@ -423,7 +423,7 @@ class TestJuniorDevFormatter:
 
     def test_converts_error_codes_to_explanations(self):
         """Should convert cryptic error codes to human-readable explanations."""
-        from src.des.application.recovery_guidance_handler import JuniorDevFormatter
+        from des.application.recovery_guidance_handler import JuniorDevFormatter
 
         formatter = JuniorDevFormatter()
 
@@ -444,7 +444,7 @@ class TestJuniorDevFormatter:
 
     def test_formats_with_step_by_step_guidance(self):
         """Should format suggestions with clear step-by-step actions."""
-        from src.des.application.recovery_guidance_handler import JuniorDevFormatter
+        from des.application.recovery_guidance_handler import JuniorDevFormatter
 
         formatter = JuniorDevFormatter()
 
@@ -465,7 +465,7 @@ class TestJuniorDevFormatter:
 
     def test_handles_all_failure_modes(self):
         """Should handle formatting for all defined failure modes."""
-        from src.des.application.recovery_guidance_handler import JuniorDevFormatter
+        from des.application.recovery_guidance_handler import JuniorDevFormatter
 
         formatter = JuniorDevFormatter()
 

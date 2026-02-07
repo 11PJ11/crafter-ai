@@ -135,7 +135,7 @@ class TDDPhaseValidator:
 
     def __init__(self):
         """Initialize validator with schema loader."""
-        from src.des.domain.tdd_schema import get_tdd_schema
+        from des.domain.tdd_schema import get_tdd_schema
 
         self._schema = get_tdd_schema()
         self.MANDATORY_PHASES = self._schema.tdd_phases
@@ -160,7 +160,9 @@ class TDDPhaseValidator:
             List of error messages (empty if all phases present)
         """
         # Check for shorthand pattern (7 phases from schema)
-        shorthand_pattern = r"(?i)all\s+7\s+phases?\s+(listed|mentioned|included|present)"
+        shorthand_pattern = (
+            r"(?i)all\s+7\s+phases?\s+(listed|mentioned|included|present)"
+        )
         if re.search(shorthand_pattern, prompt):
             return []  # Accept shorthand as valid
 
@@ -256,7 +258,7 @@ class ExecutionLogValidator:
 
     def __init__(self):
         """Initialize validator with schema loader."""
-        from src.des.domain.tdd_schema import get_tdd_schema
+        from des.domain.tdd_schema import get_tdd_schema
 
         self._schema = get_tdd_schema()
 

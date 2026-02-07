@@ -24,6 +24,7 @@ integration protocol. Internal classes are implementation details.
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -52,13 +53,14 @@ def invoke_hook(hook_type: str, payload: dict) -> tuple[int, dict]:
     """
     env = os.environ.copy()
     project_root = str(Path(__file__).parent.parent.parent.parent)
-    env["PYTHONPATH"] = project_root + os.pathsep + env.get("PYTHONPATH", "")
+    src_path = str(Path(project_root) / "src")
+    env["PYTHONPATH"] = src_path + os.pathsep + env.get("PYTHONPATH", "")
 
     proc = subprocess.run(
         [
-            "python3",
+            sys.executable,
             "-m",
-            "src.des.adapters.drivers.hooks.claude_code_hook_adapter",
+            "des.adapters.drivers.hooks.claude_code_hook_adapter",
             hook_type,
         ],
         input=json.dumps(payload),
@@ -932,12 +934,12 @@ class TestOrchestratorHookIntegration:
         # Arrange: Import entry point and real hook adapter
         from unittest.mock import Mock
 
-        from src.des.adapters.driven.filesystem.real_filesystem import RealFileSystem
+        from des.adapters.driven.filesystem.real_filesystem import RealFileSystem
 
-        # from src.des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook  # Legacy
-        from src.des.adapters.driven.time.system_time import SystemTimeProvider
-        from src.des.application.orchestrator import DESOrchestrator
-        from src.des.application.validator import TemplateValidator
+        # from des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook  # Legacy
+        from des.adapters.driven.time.system_time import SystemTimeProvider
+        from des.application.orchestrator import DESOrchestrator
+        from des.application.validator import TemplateValidator
 
         # Create execution-log.yaml with clean completion (Schema v2.0)
         log_data = _create_execution_log_with_clean_completion(tdd_phases)
@@ -973,12 +975,12 @@ class TestOrchestratorHookIntegration:
         # Arrange: Import entry point and real hook adapter
         from unittest.mock import Mock
 
-        from src.des.adapters.driven.filesystem.real_filesystem import RealFileSystem
+        from des.adapters.driven.filesystem.real_filesystem import RealFileSystem
 
-        # from src.des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook  # Legacy
-        from src.des.adapters.driven.time.system_time import SystemTimeProvider
-        from src.des.application.orchestrator import DESOrchestrator
-        from src.des.application.validator import TemplateValidator
+        # from des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook  # Legacy
+        from des.adapters.driven.time.system_time import SystemTimeProvider
+        from des.application.orchestrator import DESOrchestrator
+        from des.application.validator import TemplateValidator
 
         # Create execution-log.yaml with abandoned phase (Schema v2.0)
         log_data = _create_execution_log_with_abandoned_phase(

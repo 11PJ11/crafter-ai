@@ -2,6 +2,7 @@
 
 import json
 import subprocess
+import sys
 
 
 class TestInstallDESHooks:
@@ -25,7 +26,7 @@ class TestInstallDESHooks:
         # When: run installer
         result = subprocess.run(
             [
-                "python3",
+                sys.executable,
                 "scripts/install/install_des_hooks.py",
                 "--install",
                 "--config-dir",
@@ -92,7 +93,7 @@ class TestInstallDESHooks:
         # When: run installer
         result = subprocess.run(
             [
-                "python3",
+                sys.executable,
                 "scripts/install/install_des_hooks.py",
                 "--install",
                 "--config-dir",
@@ -125,7 +126,7 @@ class TestInstallDESHooks:
         for _ in range(2):
             result = subprocess.run(
                 [
-                    "python3",
+                    sys.executable,
                     "scripts/install/install_des_hooks.py",
                     "--install",
                     "--config-dir",
@@ -151,7 +152,7 @@ class TestInstallDESHooks:
         # When: run installer
         subprocess.run(
             [
-                "python3",
+                sys.executable,
                 "scripts/install/install_des_hooks.py",
                 "--install",
                 "--config-dir",
@@ -184,7 +185,7 @@ class TestInstallDESHooks:
         # When: run installer
         subprocess.run(
             [
-                "python3",
+                sys.executable,
                 "scripts/install/install_des_hooks.py",
                 "--install",
                 "--config-dir",
@@ -216,7 +217,7 @@ class TestInstallDESHooks:
         # When: run installer
         subprocess.run(
             [
-                "python3",
+                sys.executable,
                 "scripts/install/install_des_hooks.py",
                 "--install",
                 "--config-dir",
@@ -251,7 +252,7 @@ class TestInstallDESHooks:
         # Install DES hooks first
         subprocess.run(
             [
-                "python3",
+                sys.executable,
                 "scripts/install/install_des_hooks.py",
                 "--install",
                 "--config-dir",
@@ -272,7 +273,7 @@ class TestInstallDESHooks:
         # When: run uninstaller
         result = subprocess.run(
             [
-                "python3",
+                sys.executable,
                 "scripts/install/install_des_hooks.py",
                 "--uninstall",
                 "--config-dir",
@@ -329,7 +330,7 @@ class TestInstallDESHooks:
         # When: run uninstaller
         result = subprocess.run(
             [
-                "python3",
+                sys.executable,
                 "scripts/install/install_des_hooks.py",
                 "--uninstall",
                 "--config-dir",
@@ -351,7 +352,7 @@ class TestInstallDESHooks:
         # When: run installer
         subprocess.run(
             [
-                "python3",
+                sys.executable,
                 "scripts/install/install_des_hooks.py",
                 "--install",
                 "--config-dir",
@@ -377,7 +378,7 @@ class TestInstallDESHooks:
 
         subprocess.run(
             [
-                "python3",
+                sys.executable,
                 "scripts/install/install_des_hooks.py",
                 "--install",
                 "--config-dir",
@@ -390,7 +391,7 @@ class TestInstallDESHooks:
         # When: run status command
         result = subprocess.run(
             [
-                "python3",
+                sys.executable,
                 "scripts/install/install_des_hooks.py",
                 "--status",
                 "--config-dir",
@@ -413,7 +414,7 @@ class TestInstallDESHooks:
         # When: run status command
         result = subprocess.run(
             [
-                "python3",
+                sys.executable,
                 "scripts/install/install_des_hooks.py",
                 "--status",
                 "--config-dir",

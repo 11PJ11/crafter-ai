@@ -40,7 +40,7 @@ class TestHookAdapterReference:
         Verifies the module can be imported without errors.
         """
         try:
-            from src.des.adapters.drivers.hooks import claude_code_hook_adapter
+            from des.adapters.drivers.hooks import claude_code_hook_adapter
 
             # Verify expected functions exist
             assert hasattr(claude_code_hook_adapter, "handle_pre_tool_use")
@@ -51,7 +51,7 @@ class TestHookAdapterReference:
 
     def test_hook_adapter_has_main_entry_point(self):
         """Verify hook adapter can run as CLI module."""
-        from src.des.adapters.drivers.hooks import claude_code_hook_adapter
+        from des.adapters.drivers.hooks import claude_code_hook_adapter
 
         # Test main() exists and is callable
         assert callable(claude_code_hook_adapter.main)
@@ -256,7 +256,7 @@ class TestHookAdapterFunctionality:
         NOTE: Only checks PUBLIC interface (handle_subagent_stop).
         Internal validation functions are implementation details.
         """
-        from src.des.adapters.drivers.hooks import claude_code_hook_adapter
+        from des.adapters.drivers.hooks import claude_code_hook_adapter
 
         # Verify public interface for Schema v2.0 handling exists
         assert hasattr(claude_code_hook_adapter, "handle_subagent_stop"), (
@@ -276,19 +276,21 @@ class TestHookAdapterFunctionality:
         import sys
         from io import StringIO
 
-        from src.des.adapters.drivers.hooks import claude_code_hook_adapter
+        from des.adapters.drivers.hooks import claude_code_hook_adapter
 
         # Claude Code protocol: tool_input at top level
-        test_input = json.dumps({
-            "session_id": "test-session",
-            "hook_event_name": "PreToolUse",
-            "tool_name": "Task",
-            "tool_input": {
-                "prompt": "Find all Python files",
-                "max_turns": 30,
-                "subagent_type": "Explore",
-            },
-        })
+        test_input = json.dumps(
+            {
+                "session_id": "test-session",
+                "hook_event_name": "PreToolUse",
+                "tool_name": "Task",
+                "tool_input": {
+                    "prompt": "Find all Python files",
+                    "max_turns": 30,
+                    "subagent_type": "Explore",
+                },
+            }
+        )
 
         original_stdin = sys.stdin
         original_stdout = sys.stdout
@@ -313,15 +315,17 @@ class TestHookAdapterFunctionality:
         import sys
         from io import StringIO
 
-        from src.des.adapters.drivers.hooks import claude_code_hook_adapter
+        from des.adapters.drivers.hooks import claude_code_hook_adapter
 
-        test_input = json.dumps({
-            "tool_name": "Task",
-            "tool_input": {
-                "prompt": "Find all Python files",
-                "subagent_type": "Explore",
-            },
-        })
+        test_input = json.dumps(
+            {
+                "tool_name": "Task",
+                "tool_input": {
+                    "prompt": "Find all Python files",
+                    "subagent_type": "Explore",
+                },
+            }
+        )
 
         original_stdin = sys.stdin
         original_stdout = sys.stdout
@@ -350,7 +354,7 @@ class TestHookAdapterFunctionality:
         import sys
         from io import StringIO
 
-        from src.des.adapters.drivers.hooks import claude_code_hook_adapter
+        from des.adapters.drivers.hooks import claude_code_hook_adapter
 
         # Mock stdin with missing fields
         test_input = json.dumps(

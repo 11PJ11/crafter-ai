@@ -9,28 +9,37 @@ Cross-platform compatible (Windows, Mac, Linux).
 __version__ = "1.1.0"
 
 import os
+import re
 import shutil
 import sys
+from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 
 
 class Logger:
-    """Cross-platform logger with color support.
+    """Unified logger with pretty-print, spinner, table, and panel support.
 
-    Supports both console and file logging. When silent=True, logs only to file
-    without console output (useful for JSON output modes).
-
-    This is a lightweight logger that uses ANSI color codes directly.
-    For Rich console features, use rich_console.RichLogger instead.
+    Single logger for all console and file output. Uses Rich when available
+    for auto-highlighted output (paths in magenta, numbers in cyan), animated
+    spinners, styled tables, and bordered panels. Falls back to plain text.
     """
 
-    # ANSI color codes for terminal output
-    _GREEN = "\033[0;32m"
+    # ANSI fallback colors (used when Rich is not available)
     _YELLOW = "\033[1;33m"
     _RED = "\033[0;31m"
     _BLUE = "\033[0;34m"
     _NC = "\033[0m"  # No Color
+
+    # Maps ANSI codes to Rich styles for the fallback→Rich bridge
+    _ANSI_TO_RICH = {
+        "\033[1;33m": "yellow",
+        "\033[0;31m": "bold red",
+        "\033[0;34m": "blue",
+    }
+
+    # Regex to strip Rich markup tags for file logging
+    _MARKUP_RE = re.compile(r"\[/?[a-z][a-z0-9_ ]*\]")
 
     def __init__(self, log_file: Path | None = None, silent: bool = False):
         """Initialize logger with optional log file.
@@ -50,36 +59,62 @@ class Logger:
         if log_file:
             log_file.parent.mkdir(parents=True, exist_ok=True)
 
-    def _get_color(self, color: str) -> str:
-        """Get color code, or empty string if colors disabled."""
-        if self._use_colors:
-            return color
-        return ""
+        # Rich console for pretty-print (paths, numbers auto-highlighted)
+        self._rich_console = None
+        if not silent:
+            try:
+                from rich.console import Console
+                from rich.theme import Theme
+
+                theme = Theme(
+                    {
+                        "repr.path": "magenta",
+                        "repr.number": "cyan",
+                    }
+                )
+                self._rich_console = Console(theme=theme)
+            except ImportError:
+                pass
+
+    @property
+    def has_rich(self) -> bool:
+        """Whether Rich console is available for markup."""
+        return self._rich_console is not None
+
+    def _write_to_file(self, level: str, message: str):
+        """Write structured log entry to file."""
+        if not self.log_file:
+            return
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_msg = f"[{timestamp}] {level}: {message}"
+        try:
+            with open(self.log_file, "a", encoding="utf-8") as f:
+                f.write(log_msg + "\n")
+        except Exception:
+            pass
 
     def _log(self, level: str, message: str, color: str = ""):
-        """Internal logging method."""
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-        if color and self._use_colors:
-            console_msg = f"{color}[{timestamp}] {level}: {message}{self._NC}"
-        else:
-            console_msg = f"[{timestamp}] {level}: {message}"
-
-        log_msg = f"[{timestamp}] {level}: {message}"
-
+        """Internal logging method for info/warn/error/step."""
+        # Console: pretty-print with Rich or ANSI fallback
         if not self.silent:
-            print(console_msg)
+            if self._rich_console:
+                style = self._ANSI_TO_RICH.get(color)
+                self._rich_console.print(
+                    message,
+                    style=style,
+                    markup=False,
+                    highlight=not style,
+                )
+            elif color and self._use_colors:
+                print(f"{color}{message}{self._NC}")
+            else:
+                print(message)
 
-        if self.log_file:
-            try:
-                with open(self.log_file, "a", encoding="utf-8") as f:
-                    f.write(log_msg + "\n")
-            except Exception:
-                pass  # Ignore log file errors
+        self._write_to_file(level, message)
 
     def info(self, message: str):
         """Log info message."""
-        self._log("INFO", message, self._GREEN)
+        self._log("INFO", message)
 
     def warn(self, message: str):
         """Log warning message."""
@@ -92,6 +127,113 @@ class Logger:
     def step(self, message: str):
         """Log step message."""
         self._log("STEP", message, self._BLUE)
+
+    @contextmanager
+    def progress_spinner(self, message: str, spinner_style: str = "dots12"):
+        """Animated spinner during long operations. Falls back to plain step."""
+        self._write_to_file("STEP", message)
+
+        if self.silent or not self._rich_console:
+            if not self.silent:
+                print(message)
+            yield
+            return
+
+        try:
+            from rich.status import Status
+
+            with Status(message, console=self._rich_console, spinner=spinner_style):
+                yield
+        except ImportError:
+            print(message)
+            yield
+
+    def table(
+        self, headers: list[str], rows: list[list[str]], title: str | None = None
+    ):
+        """Print a table. Rich table on screen, plain text in log file."""
+        # File: plain text representation
+        if title:
+            self._write_to_file("INFO", title)
+        for row in rows:
+            self._write_to_file("INFO", "  " + " | ".join(str(c) for c in row))
+
+        if self.silent:
+            return
+
+        if self._rich_console:
+            try:
+                from rich.table import Table
+
+                t = Table(title=title)
+                for h in headers:
+                    t.add_column(h)
+                for row in rows:
+                    t.add_row(*row)
+                self._rich_console.print(t)
+                return
+            except ImportError:
+                pass
+
+        # Plain text fallback
+        if title:
+            print(f"\n{title}")
+            print("=" * len(title))
+        header_line = " | ".join(headers)
+        print(header_line)
+        print("-" * len(header_line))
+        for row in rows:
+            print(" | ".join(str(c) for c in row))
+        print()
+
+    def panel(self, content: str, title: str | None = None, style: str = "blue"):
+        """Print a bordered panel. Rich panel on screen, plain text in log file."""
+        # File: plain text representation
+        if title:
+            self._write_to_file("INFO", f"--- {title} ---")
+        for line in content.split("\n"):
+            self._write_to_file("INFO", line)
+
+        if self.silent:
+            return
+
+        if self._rich_console:
+            try:
+                from rich.panel import Panel
+
+                self._rich_console.print(
+                    Panel(content, title=title, border_style=style)
+                )
+                return
+            except ImportError:
+                pass
+
+        # Plain text fallback
+        width = max(len(line) for line in content.split("\n")) + 4
+        if title:
+            width = max(width, len(title) + 4)
+        print("+" + "-" * (width - 2) + "+")
+        if title:
+            print(f"| {title.center(width - 4)} |")
+            print("+" + "-" * (width - 2) + "+")
+        for line in content.split("\n"):
+            print(f"| {line.ljust(width - 4)} |")
+        print("+" + "-" * (width - 2) + "+")
+
+    def print_styled(self, text: str, style: str = ""):
+        """Print with Rich markup/styling. Falls back to plain text."""
+        # File: strip markup
+        clean = self._MARKUP_RE.sub("", text)
+        if clean.strip():
+            self._write_to_file("INFO", clean)
+
+        if self.silent:
+            return
+
+        if self._rich_console:
+            self._rich_console.print(text, style=style or None)
+        else:
+            print(clean)
 
 
 class PathUtils:
@@ -205,7 +347,7 @@ class BackupManager:
             Path to backup directory or None if nothing to backup
         """
         if dry_run:
-            self.logger.info(f"[DRY RUN] Would create backup at: {self.backup_dir}")
+            self.logger.info(f"  🚨 [DRY RUN] Would backup to {self.backup_dir}")
             return None
 
         # Check if there's anything to backup
@@ -213,35 +355,36 @@ class BackupManager:
         commands_dir = self.claude_config_dir / "commands"
 
         if not agents_dir.exists() and not commands_dir.exists():
-            self.logger.info("No existing nWave installation found, skipping backup")
+            self.logger.info("  ℹ️  No existing installation, skipping backup")
             return None
 
-        self.logger.info(f"Creating backup at: {self.backup_dir}")
+        self.logger.info("")
+        self.logger.info(f"  💾 Backup at {self.backup_dir}")
         self.backup_dir.mkdir(parents=True, exist_ok=True)
 
         # Backup agents
         if agents_dir.exists():
             backup_agents = self.backup_dir / "agents"
             shutil.copytree(agents_dir, backup_agents)
-            self.logger.info("Backed up agents directory")
+            self.logger.info("  ✅ Agents backed up")
 
         # Backup commands
         if commands_dir.exists():
             backup_commands = self.backup_dir / "commands"
             shutil.copytree(commands_dir, backup_commands)
-            self.logger.info("Backed up commands directory")
+            self.logger.info("  ✅ Commands backed up")
 
         # Backup config files
         for config_file in ["nwave-manifest.txt", "nwave-install.log"]:
             src = self.claude_config_dir / config_file
             if src.exists():
                 shutil.copy2(src, self.backup_dir / config_file)
-                self.logger.info(f"Backed up {config_file}")
+                self.logger.info(f"  ✅ {config_file} backed up")
 
         # Create manifest
         self._create_manifest()
 
-        self.logger.info(f"Backup created successfully at: {self.backup_dir}")
+        self.logger.info(f"  ✅ Backup complete → {self.backup_dir}")
         return self.backup_dir
 
     def _create_manifest(self):
@@ -348,7 +491,7 @@ Usage:
 - Use '/nw:start "feature description"' to initialize nWave workflow
 - All agents available globally across projects
 
-For help: https://github.com/11PJ11/crafter-ai
+For help: https://github.com/nWave-ai/nWave
 """
 
         manifest_path.write_text(content, encoding="utf-8")
@@ -459,5 +602,5 @@ def confirm_action(prompt: str, force: bool = False) -> bool:
         response = input(f"{prompt} (y/N): ").strip().lower()
         return response in ("y", "yes")
     except (KeyboardInterrupt, EOFError):
-        print("\nCancelled by user.")
+        print("\n  ⚠️ Cancelled by user")
         return False

@@ -15,6 +15,7 @@ These tests validate:
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
+
 from scripts.install.plugins.base import InstallContext, PluginResult
 from scripts.install.plugins.registry import PluginRegistry
 
@@ -32,10 +33,9 @@ def configured_installer(tmp_path):
         installer.project_root = tmp_path
         installer.framework_source = tmp_path / "dist" / "ide"
         installer.logger = Mock()
-        installer.rich_logger = Mock()
-        installer.rich_logger.progress_spinner = MagicMock()
-        installer.rich_logger.progress_spinner.return_value.__enter__ = Mock()
-        installer.rich_logger.progress_spinner.return_value.__exit__ = Mock()
+        installer.logger.progress_spinner = MagicMock()
+        installer.logger.progress_spinner.return_value.__enter__ = Mock()
+        installer.logger.progress_spinner.return_value.__exit__ = Mock()
         installer.backup_manager = Mock()
 
         # Create minimal source structure
@@ -95,9 +95,7 @@ class TestInstallFrameworkUsesPluginRegistry:
                 "utilities": PluginResult(
                     success=True, plugin_name="utilities", message="OK"
                 ),
-                "des": PluginResult(
-                    success=True, plugin_name="des", message="OK"
-                ),
+                "des": PluginResult(success=True, plugin_name="des", message="OK"),
             }
             MockRegistry.return_value = mock_registry
 
@@ -213,9 +211,7 @@ class TestInstallFrameworkPluginExecutionOrder:
                 "utilities": PluginResult(
                     success=True, plugin_name="utilities", message="OK"
                 ),
-                "des": PluginResult(
-                    success=True, plugin_name="des", message="OK"
-                ),
+                "des": PluginResult(success=True, plugin_name="des", message="OK"),
             }
             MockRegistry.return_value = mock_registry
 

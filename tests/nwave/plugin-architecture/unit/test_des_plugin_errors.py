@@ -18,6 +18,7 @@ import logging
 from pathlib import Path
 
 import pytest
+
 from scripts.install.plugins.base import InstallContext
 from scripts.install.plugins.des_plugin import DESPlugin
 

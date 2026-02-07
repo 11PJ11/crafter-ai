@@ -638,59 +638,38 @@ class TestInstallNwaveCallsVerifier:
         import sys
         from unittest.mock import MagicMock, patch
 
-        from scripts.install.installation_verifier import VerificationResult
-
         # ARRANGE
-        mock_result = VerificationResult(
-            success=True,
-            agent_file_count=41,
-            command_file_count=25,
-            manifest_exists=True,
-            missing_essential_files=[],
-            error_code=None,
-            message="Verification completed successfully.",
-        )
-
         with patch(
-            "scripts.install.install_nwave.InstallationVerifier"
-        ) as mock_verifier_class:
-            mock_verifier = MagicMock()
-            mock_verifier.run_verification.return_value = mock_result
-            mock_verifier_class.return_value = mock_verifier
+            "scripts.install.install_nwave.PreflightChecker"
+        ) as mock_preflight_class:
+            mock_checker = MagicMock()
+            mock_checker.run_all_checks.return_value = []
+            mock_checker.has_blocking_failures.return_value = False
+            mock_preflight_class.return_value = mock_checker
 
             with patch(
-                "scripts.install.install_nwave.PreflightChecker"
-            ) as mock_preflight_class:
-                mock_checker = MagicMock()
-                mock_checker.run_all_checks.return_value = []
-                mock_checker.has_blocking_failures.return_value = False
-                mock_preflight_class.return_value = mock_checker
-
+                "scripts.install.install_nwave.NWaveInstaller.check_source",
+                return_value=True,
+            ):
                 with patch(
-                    "scripts.install.install_nwave.NWaveInstaller.check_source",
-                    return_value=True,
+                    "scripts.install.install_nwave.NWaveInstaller.create_backup"
                 ):
                     with patch(
-                        "scripts.install.install_nwave.NWaveInstaller.create_backup"
+                        "scripts.install.install_nwave.NWaveInstaller.install_framework",
+                        return_value=True,
                     ):
                         with patch(
-                            "scripts.install.install_nwave.NWaveInstaller.install_framework",
-                            return_value=True,
+                            "scripts.install.install_nwave.NWaveInstaller.create_manifest"
                         ):
                             with patch(
-                                "scripts.install.install_nwave.NWaveInstaller.create_manifest"
+                                "scripts.install.install_nwave.NWaveInstaller.validate_installation",
+                                return_value=True,
                             ):
-                                with patch(
-                                    "scripts.install.install_nwave.NWaveInstaller._validate_schema_template",
-                                    return_value=True,
-                                ):
-                                    # ACT
-                                    from scripts.install.install_nwave import main
+                                # ACT
+                                from scripts.install.install_nwave import main
 
-                                    with patch.object(
-                                        sys, "argv", ["install_nwave.py"]
-                                    ):
-                                        exit_code = main()
+                                with patch.object(sys, "argv", ["install_nwave.py"]):
+                                    exit_code = main()
 
         # ASSERT
         assert exit_code == 0, "Successful verification should result in exit code 0"

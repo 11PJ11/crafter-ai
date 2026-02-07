@@ -10,7 +10,7 @@ Tests verify that the generator:
 
 import json
 
-from src.des.application.boundary_rules_generator import BoundaryRulesGenerator
+from des.application.boundary_rules_generator import BoundaryRulesGenerator
 
 
 class TestBoundaryRulesGeneratorShouldGenerateAllowedPatterns:

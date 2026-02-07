@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from src.des.ports.driven_ports.time_provider_port import TimeProvider
+from des.ports.driven_ports.time_provider_port import TimeProvider
 
 
 class SystemTimeProvider(TimeProvider):

@@ -4,6 +4,7 @@ import json
 from unittest.mock import patch
 
 import pytest
+
 from scripts.framework.release_validation import (
     ChecksumMismatchValidator,
     MissingArtifactsValidator,

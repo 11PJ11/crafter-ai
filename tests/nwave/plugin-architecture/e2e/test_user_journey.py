@@ -16,6 +16,7 @@ import logging
 from pathlib import Path
 
 import pytest
+
 from scripts.install.plugins.agents_plugin import AgentsPlugin
 from scripts.install.plugins.base import InstallContext
 from scripts.install.plugins.commands_plugin import CommandsPlugin
