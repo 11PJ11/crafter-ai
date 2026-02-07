@@ -4,6 +4,20 @@
 
 The DES audit trail module provides append-only, immutable logging for compliance verification. It captures all execution state transitions with cryptographic integrity guarantees, enabling auditors to prove feature execution occurred correctly.
 
+## Breaking Changes
+
+**Schema v2.0 Migration (2026-02)**
+
+The `step_path` field has been replaced with two direct fields:
+
+| Old Schema | New Schema |
+|---|---|
+| `step_path: "steps/01-01.json"` | `feature_name: "audit-log-refactor"` + `step_id: "01-01"` |
+
+**Rationale**: `feature_name` is sourced from the `DES-PROJECT-ID` marker in the step file header and from `SubagentStopContext.project_id`. This aligns audit events with the project-centric hexagonal architecture, where feature identity is a first-class concept rather than a file system path.
+
+**Migration**: All consumers of the audit log must update queries from `.step_path` to `.feature_name` and `.step_id`. The `step_path` field is no longer emitted.
+
 ## Core Components
 
 ### AuditLogger
@@ -29,7 +43,8 @@ logger = AuditLogger(log_dir=".des/audit")
 logger.append({
     "timestamp": "2026-01-27T14:30:45.123Z",
     "event": "PHASE_STARTED",
-    "step_path": "steps/01-01.json",
+    "feature_name": "audit-log-refactor",
+    "step_id": "01-01",
     "phase": "RED_ACCEPTANCE"
 })
 
@@ -37,7 +52,7 @@ logger.append({
 hash_result = logger.compute_hash_of_entries(start_idx=0, end_idx=10)
 
 # Retrieve entries for specific step
-entries = logger.read_entries_for_step("steps/01-01.json")
+entries = logger.read_entries_for_step(step_id="01-01")
 
 # Get all entries
 all_entries = logger.get_entries()
@@ -46,12 +61,12 @@ all_entries = logger.get_entries()
 logger.rotate_if_needed()
 ```
 
-### AuditEvent
+### AuditEvent (Port Layer)
 
-The `AuditEvent` dataclass provides structured event definitions with comprehensive context.
+The `PortAuditEvent` dataclass in the port layer provides structured event definitions with comprehensive context. The `feature_name` and `step_id` are direct fields on the event, not nested inside extra context.
 
 #### Location
-`src/des/adapters/driven/logging/audit_events.py`
+`src/des/ports/driven_ports/audit_log_writer.py`
 
 #### Event Types
 
@@ -83,10 +98,11 @@ Organized into 4 categories:
 
 ```python
 @dataclass
-class AuditEvent:
+class PortAuditEvent:
     timestamp: str  # ISO 8601: YYYY-MM-DDTHH:MM:SS.sssZ
     event: str  # Event type
-    step_path: Optional[str]  # Path to step file
+    feature_name: Optional[str]  # Project/feature identifier (from DES-PROJECT-ID)
+    step_id: Optional[str]  # Step identifier (e.g., "01-01")
     phase_name: Optional[str]  # Name of TDD phase
     status: Optional[str]  # Current status
     outcome: Optional[str]  # Success or failure
@@ -108,13 +124,15 @@ from src.des.adapters.driven.logging.audit_logger import log_audit_event
 log_audit_event(
     "TASK_INVOCATION_STARTED",
     command="nw:execute",
-    step_path="steps/01-01.json"
+    feature_name="audit-log-refactor",
+    step_id="01-01"
 )
 
 # Log phase transition
 log_audit_event(
     "PHASE_STARTED",
-    step_path="steps/01-01.json",
+    feature_name="audit-log-refactor",
+    step_id="01-01",
     phase_name="RED_ACCEPTANCE",
     status="IN_PROGRESS"
 )
@@ -122,7 +140,8 @@ log_audit_event(
 # Log successful completion
 log_audit_event(
     "PHASE_EXECUTED",
-    step_path="steps/01-01.json",
+    feature_name="audit-log-refactor",
+    step_id="01-01",
     phase_name="RED_ACCEPTANCE",
     outcome="success",
     duration_minutes=15.5
@@ -133,7 +152,7 @@ log_audit_event(
 
 ```python
 # Get entries for a step
-entries = logger.read_entries_for_step("steps/01-01.json")
+entries = logger.read_entries_for_step(step_id="01-01")
 
 # Verify no tampering occurred
 original_hash = logger.compute_hash_of_entries(0, 5)
@@ -147,9 +166,9 @@ assert original_hash == verify_hash  # Hash unchanged = no tampering
 Entries are stored in JSONL format (JSON Lines):
 
 ```jsonl
-{"timestamp":"2026-01-27T14:30:45.123Z","event":"PHASE_STARTED","step_path":"steps/01-01.json","phase":"RED_ACCEPTANCE"}
-{"timestamp":"2026-01-27T14:31:12.456Z","event":"PHASE_EXECUTED","step_path":"steps/01-01.json","phase":"RED_ACCEPTANCE","outcome":"success"}
-{"timestamp":"2026-01-27T14:31:45.789Z","event":"PHASE_STARTED","step_path":"steps/01-01.json","phase":"RED_UNIT"}
+{"timestamp":"2026-01-27T14:30:45.123Z","event":"PHASE_STARTED","feature_name":"audit-log-refactor","step_id":"01-01","phase":"RED_ACCEPTANCE"}
+{"timestamp":"2026-01-27T14:31:12.456Z","event":"PHASE_EXECUTED","feature_name":"audit-log-refactor","step_id":"01-01","phase":"RED_ACCEPTANCE","outcome":"success"}
+{"timestamp":"2026-01-27T14:31:45.789Z","event":"PHASE_STARTED","feature_name":"audit-log-refactor","step_id":"01-01","phase":"RED_UNIT"}
 ```
 
 ## Log File Rotation
@@ -168,9 +187,14 @@ The audit logger is integrated into the DES orchestrator (`src/des/application/o
 
 ```python
 # Logs task invocation lifecycle
-def render_prompt(self, command, step_file=None, agent=None):
-    # Log start of task invocation
-    log_audit_event("TASK_INVOCATION_STARTED", command=command, step_path=step_file)
+def render_prompt(self, command, step_file=None, agent=None, project_id=None):
+    # Log start of task invocation (feature_name sourced from project_id parameter)
+    log_audit_event(
+        "TASK_INVOCATION_STARTED",
+        command=command,
+        feature_name=project_id,
+        step_id=step_id
+    )
 
     # ... validation logic ...
 
@@ -178,14 +202,53 @@ def render_prompt(self, command, step_file=None, agent=None):
     log_audit_event("TASK_INVOCATION_VALIDATED", command=command, status="VALIDATED")
 ```
 
+### SubagentStopService
+
+The subagent stop service (`src/des/application/subagent_stop_service.py`) sources `feature_name` from `SubagentStopContext.project_id`:
+
+```python
+# SubagentStopContext provides project_id which maps to feature_name
+context = SubagentStopContext(project_id="audit-log-refactor", step_id="01-01", ...)
+
+# Audit event uses feature_name and step_id as direct fields
+log_audit_event(
+    "SUBAGENT_STOP_VALIDATION",
+    feature_name=context.project_id,
+    step_id=context.step_id,
+    outcome="PASS"
+)
+```
+
+## Querying Audit Logs
+
+### By Feature Name
+
+```bash
+# Find all events for a specific feature
+jq -c 'select(.feature_name == "audit-log-refactor")' .des/audit/audit-2026-01-27.log
+
+# Find all events for a specific step within a feature
+jq -c 'select(.feature_name == "audit-log-refactor" and .step_id == "01-01")' .des/audit/audit-2026-01-27.log
+```
+
+### By Event Type
+
+```bash
+# Find all phase failures
+jq -c 'select(.event == "PHASE_FAILED")' .des/audit/audit-2026-01-27.log
+
+# Find all events for a step with phase details
+jq -c 'select(.step_id == "01-01") | {event, phase: .phase_name, outcome}' .des/audit/audit-2026-01-27.log
+```
+
 ## Compliance Features
 
-✓ **Immutability**: SHA256 hashing prevents undetected tampering
-✓ **Non-Repudiation**: Timestamps prove when events occurred
-✓ **Audit Trail**: Complete execution history for review
-✓ **Data Integrity**: Hash verification confirms no modifications
-✓ **Regulatory Compliance**: Append-only logs meet audit requirements
-✓ **Human Readable**: JSONL format allows manual inspection
+- **Immutability**: SHA256 hashing prevents undetected tampering
+- **Non-Repudiation**: Timestamps prove when events occurred
+- **Audit Trail**: Complete execution history for review
+- **Data Integrity**: Hash verification confirms no modifications
+- **Regulatory Compliance**: Append-only logs meet audit requirements
+- **Human Readable**: JSONL format allows manual inspection
 
 ## Test Coverage
 
@@ -202,9 +265,9 @@ def render_prompt(self, command, step_file=None, agent=None):
 
 ## Security Considerations
 
-⚠️ **Hash Verification Only**: SHA256 hashing detects tampering but doesn't prevent modifications by root/administrator
-⚠️ **File System Security**: Rely on OS/file system permissions to protect audit log files
-⚠️ **Storage**: Ensure audit logs are stored on separate, protected storage for regulatory compliance
+- **Hash Verification Only**: SHA256 hashing detects tampering but doesn't prevent modifications by root/administrator
+- **File System Security**: Rely on OS/file system permissions to protect audit log files
+- **Storage**: Ensure audit logs are stored on separate, protected storage for regulatory compliance
 
 ## See Also
 
