@@ -24,7 +24,7 @@ flowchart TD
 
     subgraph stage2["Stage 2: Framework Validation  ~2 min"]
         style stage2 fill:#FFF9C4,stroke:#F9A825
-        FV["framework-validation<br/>Catalog schema, docs version,<br/>freshness, conflicts"]
+        FV["framework-validation<br/>Catalog schema, version consistency,<br/>docs version, freshness, conflicts"]
     end
 
     subgraph stage3["Stage 3: Cross-Platform Tests  ~10 min"]
@@ -150,6 +150,7 @@ Single job on `ubuntu-latest`. **Requires**: all Stage 1 jobs pass.
 | Check | Tool | What it validates |
 |-------|------|-------------------|
 | Catalog schema | Inline Python | `nWave/framework-catalog.yaml` has `name`, `version`, `description`, `agents`, `commands`; version is valid semver |
+| Version consistency | Inline Python | `pyproject.toml` version matches `framework-catalog.yaml` version (single source of truth gate) |
 | Docs version | `scripts/hooks/validate_docs.py` | Documentation version consistency |
 | Docs freshness | `scripts/hooks/check_documentation_freshness.py` | Documentation is not stale |
 | File conflicts | `scripts/hooks/detect_conflicts.py` | No conflicting file definitions |

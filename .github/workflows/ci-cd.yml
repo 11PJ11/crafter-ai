@@ -11,7 +11,7 @@
 #   - security: Merge conflicts, private keys, shell prevention
 #
 # Stage 2 - Framework Validation (parallel, ~2 min):
-#   - framework-validation: YAML schema, docs version, freshness, conflicts
+#   - framework-validation: YAML schema, version consistency, docs version, freshness, conflicts
 #
 # Stage 3 - Cross-Platform Tests (parallel matrix, ~10 min):
 #   - test: 3 OS x 2 Python versions = 6 jobs
@@ -274,6 +274,49 @@ jobs:
 
           print(f'::notice::framework-catalog.yaml validation passed (version: {version})')
           EOF
+
+      - name: 🔢 Verify version consistency (single source of truth)
+        run: |
+          python3 << 'PYEOF'
+          import sys
+          import yaml
+
+          errors = []
+
+          # 1. Read canonical version from pyproject.toml
+          with open('pyproject.toml', 'r') as f:
+              for line in f:
+                  if line.startswith('version = '):
+                      pyproject_version = line.split('"')[1]
+                      break
+              else:
+                  print('::error::No version field found in pyproject.toml')
+                  sys.exit(1)
+
+          # 2. Read framework-catalog.yaml version
+          with open('nWave/framework-catalog.yaml', 'r') as f:
+              catalog = yaml.safe_load(f)
+          catalog_version = catalog.get('version', 'MISSING')
+
+          # 3. Compare
+          if pyproject_version != catalog_version:
+              errors.append(
+                  f'pyproject.toml ({pyproject_version}) != '
+                  f'framework-catalog.yaml ({catalog_version})'
+              )
+
+          if errors:
+              print('::error::Version drift detected! All version sources must match pyproject.toml.')
+              for e in errors:
+                  print(f'::error::  {e}')
+              print()
+              print('pyproject.toml is the single source of truth.')
+              print('python-semantic-release keeps framework-catalog.yaml in sync automatically.')
+              print('If you see drift, align framework-catalog.yaml to pyproject.toml.')
+              sys.exit(1)
+
+          print(f'::notice::✅ Version consistency verified: {pyproject_version}')
+          PYEOF
 
       - name: 📖 Validate documentation version
         run: python3 scripts/hooks/validate_docs.py
