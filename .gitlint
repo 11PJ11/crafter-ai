@@ -22,11 +22,11 @@ line-length = 100
 # Conventional commit types allowed
 types = feat,fix,docs,style,refactor,perf,test,build,ci,chore,revert
 
-# Title regex - enforce lowercase after colon
-# Pattern: type(scope): lowercase subject
+# Title regex - enforce conventional commit format
+# Pattern: type(scope): subject (allows uppercase for acronyms/identifiers like L1, API)
 [body-max-line-length]
 # Allow longer body lines - matches our commit style
 line-length = 120
 
 [title-match-regex]
-regex = ^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?: [a-z].*$
+regex = ^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?: [a-zA-Z].*$

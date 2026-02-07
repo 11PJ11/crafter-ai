@@ -533,8 +533,6 @@ class TemplateValidator:
 
             Returns empty list if no execution log sections found
         """
-        import re
-
         phase_log = []
         section_markers = [
             "# EXECUTION_LOG_STATUS",

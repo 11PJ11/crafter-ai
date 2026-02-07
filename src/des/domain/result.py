@@ -7,6 +7,7 @@ making error cases explicit in function signatures.
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 
+
 T = TypeVar("T")
 E = TypeVar("E")
 

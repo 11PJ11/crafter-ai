@@ -7,6 +7,7 @@ making complex validation logic explicit and testable.
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar
 
+
 T = TypeVar("T")
 
 
