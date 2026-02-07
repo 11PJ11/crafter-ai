@@ -12,7 +12,7 @@ and external consumers.
 
 from dataclasses import dataclass
 
-from src.des.application.validator import (
+from des.application.validator import (
     MandatorySectionChecker,
     TemplateValidator,
 )

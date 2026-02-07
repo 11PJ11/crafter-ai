@@ -317,7 +317,7 @@ def valid_task_json():
     (Single Source of Truth: nWave/templates/step-tdd-cycle-schema.json).
     """
     # Import template loader to get canonical phase definitions
-    from src.des.application.tdd_template_loader import (
+    from des.application.tdd_template_loader import (
         get_expected_phase_count,
         get_schema_version,
         get_valid_tdd_phases,
@@ -448,10 +448,11 @@ def run_cli_command(
 
     cmd = ["python3", str(cli_path), *args]
 
-    # Add project root to PYTHONPATH for subprocess import resolution
+    # Add src/ to PYTHONPATH for subprocess import resolution (des. package)
     env = os.environ.copy()
     project_root = str(Path(__file__).parent.parent.parent.parent)
-    env["PYTHONPATH"] = project_root + os.pathsep + env.get("PYTHONPATH", "")
+    src_path = str(Path(project_root) / "src")
+    env["PYTHONPATH"] = src_path + os.pathsep + env.get("PYTHONPATH", "")
 
     result = subprocess.run(
         cmd,

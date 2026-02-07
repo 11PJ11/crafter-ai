@@ -1,7 +1,7 @@
 """Test adapters (mocked implementations) for DES ports.
 
 These are test-only mocked implementations for unit and integration testing.
-Production code should import from src.des.adapters.
+Production code should import from des.adapters.
 """
 
 from tests.des.adapters.in_memory_filesystem import InMemoryFileSystem

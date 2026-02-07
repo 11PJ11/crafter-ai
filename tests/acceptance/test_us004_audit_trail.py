@@ -43,8 +43,8 @@ import json
 from datetime import datetime
 
 import pytest
-from src.des.adapters.driven.logging.jsonl_audit_log_writer import JsonlAuditLogWriter
-from src.des.ports.driven_ports.audit_log_writer import AuditEvent
+from des.adapters.driven.logging.jsonl_audit_log_writer import JsonlAuditLogWriter
+from des.ports.driven_ports.audit_log_writer import AuditEvent
 
 
 def _make_timestamp() -> str:

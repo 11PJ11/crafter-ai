@@ -14,7 +14,7 @@ import subprocess
 from fnmatch import fnmatch
 from pathlib import Path
 
-from src.des.ports.driven_ports.scope_checker import ScopeCheckResult, ScopeChecker
+from des.ports.driven_ports.scope_checker import ScopeCheckResult, ScopeChecker
 
 logger = logging.getLogger(__name__)
 

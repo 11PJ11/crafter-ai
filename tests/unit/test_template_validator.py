@@ -14,7 +14,7 @@ class TestValidationResultDataclass:
 
     def test_validation_result_with_passed_status(self):
         """ValidationResult stores PASSED status with empty errors."""
-        from src.des.application.validator import ValidationResult
+        from des.application.validator import ValidationResult
 
         result = ValidationResult(
             status="PASSED", errors=[], task_invocation_allowed=True, duration_ms=45.3
@@ -27,7 +27,7 @@ class TestValidationResultDataclass:
 
     def test_validation_result_with_failed_status(self):
         """ValidationResult stores FAILED status with errors list."""
-        from src.des.application.validator import ValidationResult
+        from des.application.validator import ValidationResult
 
         errors = [
             "MISSING: Mandatory section 'TIMEOUT_INSTRUCTION' not found",
@@ -50,7 +50,7 @@ class TestMandatorySectionChecker:
 
     def test_complete_prompt_validates_all_sections(self):
         """Prompt with all 8 sections passes validation."""
-        from src.des.application.validator import MandatorySectionChecker
+        from des.application.validator import MandatorySectionChecker
 
         prompt = """
         # DES_METADATA
@@ -85,7 +85,7 @@ class TestMandatorySectionChecker:
 
     def test_missing_timeout_instruction_section(self):
         """Prompt missing TIMEOUT_INSTRUCTION returns error."""
-        from src.des.application.validator import MandatorySectionChecker
+        from des.application.validator import MandatorySectionChecker
 
         prompt = """
         # DES_METADATA
@@ -118,7 +118,7 @@ class TestMandatorySectionChecker:
 
     def test_missing_multiple_sections(self):
         """Prompt missing multiple sections returns multiple errors."""
-        from src.des.application.validator import MandatorySectionChecker
+        from des.application.validator import MandatorySectionChecker
 
         prompt = """
         # DES_METADATA
@@ -142,7 +142,7 @@ class TestTDDPhaseValidator:
 
     def test_all_7_phases_present(self):
         """Prompt mentioning all 7 phases passes validation."""
-        from src.des.application.validator import TDDPhaseValidator
+        from des.application.validator import TDDPhaseValidator
 
         prompt = """
         # TDD_7_PHASES
@@ -163,7 +163,7 @@ class TestTDDPhaseValidator:
 
     def test_missing_refactor_continuous_phase(self):
         """Prompt missing REFACTOR_CONTINUOUS returns error."""
-        from src.des.application.validator import TDDPhaseValidator
+        from des.application.validator import TDDPhaseValidator
 
         prompt = """
         # TDD_7_PHASES
@@ -183,7 +183,7 @@ class TestTDDPhaseValidator:
 
     def test_missing_multiple_phases(self):
         """Prompt missing multiple phases returns multiple errors."""
-        from src.des.application.validator import TDDPhaseValidator
+        from des.application.validator import TDDPhaseValidator
 
         prompt = """
         # TDD_7_PHASES
@@ -203,7 +203,7 @@ class TestTemplateValidator:
 
     def test_validator_accepts_complete_prompt(self):
         """Complete prompt with all sections and phases returns PASSED."""
-        from src.des.application.validator import TemplateValidator
+        from des.application.validator import TemplateValidator
 
         prompt = """
         <!-- DES-VALIDATION: required -->
@@ -247,7 +247,7 @@ class TestTemplateValidator:
 
     def test_validator_rejects_incomplete_prompt(self):
         """Incomplete prompt returns FAILED with errors."""
-        from src.des.application.validator import TemplateValidator
+        from des.application.validator import TemplateValidator
 
         prompt = """
         # DES_METADATA
@@ -266,7 +266,7 @@ class TestTemplateValidator:
 
     def test_validator_validates_duration(self):
         """Validation includes duration_ms measurement."""
-        from src.des.application.validator import TemplateValidator
+        from des.application.validator import TemplateValidator
 
         prompt = """
         # DES_METADATA

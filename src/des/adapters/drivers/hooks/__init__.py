@@ -6,6 +6,6 @@ claude_code_hook_adapter -> SubagentStopService.
 MockedSubagentStopHook retained for orchestrator tests that need a HookPort stub.
 """
 
-from src.des.adapters.drivers.hooks.mocked_hook import MockedSubagentStopHook
+from des.adapters.drivers.hooks.mocked_hook import MockedSubagentStopHook
 
 __all__ = ["MockedSubagentStopHook"]

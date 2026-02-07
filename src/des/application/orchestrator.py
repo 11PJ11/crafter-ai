@@ -25,26 +25,26 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
-from src.des.adapters.driven.logging.audit_events import AuditEvent, EventType
-from src.des.adapters.driven.logging.jsonl_audit_log_writer import JsonlAuditLogWriter
-from src.des.application.stale_execution_detector import StaleExecutionDetector
-from src.des.domain.invocation_limits_validator import (
+from des.adapters.driven.logging.audit_events import AuditEvent, EventType
+from des.adapters.driven.logging.jsonl_audit_log_writer import JsonlAuditLogWriter
+from des.application.stale_execution_detector import StaleExecutionDetector
+from des.domain.invocation_limits_validator import (
     InvocationLimitsResult,
     InvocationLimitsValidator,
 )
-from src.des.domain.timeout_monitor import TimeoutMonitor
-from src.des.domain.turn_counter import TurnCounter
-from src.des.ports.driven_ports.audit_log_writer import (
+from des.domain.timeout_monitor import TimeoutMonitor
+from des.domain.turn_counter import TurnCounter
+from des.ports.driven_ports.audit_log_writer import (
     AuditEvent as PortAuditEvent,
     AuditLogWriter,
 )
-from src.des.ports.driven_ports.filesystem_port import FileSystemPort
-from src.des.ports.driven_ports.time_provider_port import TimeProvider
-from src.des.ports.driver_ports.validator_port import ValidationResult, ValidatorPort
+from des.ports.driven_ports.filesystem_port import FileSystemPort
+from des.ports.driven_ports.time_provider_port import TimeProvider
+from des.ports.driver_ports.validator_port import ValidationResult, ValidatorPort
 
 
 if TYPE_CHECKING:
-    from src.des.domain.stale_execution import StaleExecution
+    from des.domain.stale_execution import StaleExecution
 
 
 # ---------------------------------------------------------------------------
@@ -118,7 +118,7 @@ def _log_audit_event(event_type: str, **kwargs: object) -> None:
     as direct :class:`PortAuditEvent` fields for structured traceability.
     All remaining kwargs are placed in the ``data`` dict.
     """
-    from src.des.adapters.driven.time.system_time import SystemTimeProvider
+    from des.adapters.driven.time.system_time import SystemTimeProvider
 
     feature_name = kwargs.pop("feature_name", None)
     step_id = kwargs.pop("step_id", None)
@@ -275,9 +275,9 @@ class DESOrchestrator:
         Returns:
             DESOrchestrator instance with default dependencies configured
         """
-        from src.des.adapters.driven.filesystem.real_filesystem import RealFileSystem
-        from src.des.adapters.driven.time.system_time import SystemTimeProvider
-        from src.des.application.validator import TemplateValidator
+        from des.adapters.driven.filesystem.real_filesystem import RealFileSystem
+        from des.adapters.driven.time.system_time import SystemTimeProvider
+        from des.application.validator import TemplateValidator
 
         time_provider = SystemTimeProvider()
         # Production validation now runs through claude_code_hook_adapter ->
@@ -363,7 +363,7 @@ class DESOrchestrator:
             )
 
         # Log the audit event if audit logging is enabled
-        from src.des.adapters.driven.config.des_config import DESConfig
+        from des.adapters.driven.config.des_config import DESConfig
 
         config = DESConfig()
         if config.audit_logging_enabled:
@@ -573,9 +573,9 @@ class DESOrchestrator:
         Raises:
             ValueError: If command is not a validation command
         """
-        from src.des.application.boundary_rules_generator import BoundaryRulesGenerator
-        from src.des.application.boundary_rules_template import BoundaryRulesTemplate
-        from src.des.domain.timeout_instruction_template import (
+        from des.application.boundary_rules_generator import BoundaryRulesGenerator
+        from des.application.boundary_rules_template import BoundaryRulesTemplate
+        from des.domain.timeout_instruction_template import (
             TimeoutInstructionTemplate,
         )
 

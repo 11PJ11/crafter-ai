@@ -29,8 +29,8 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
-from src.des.domain.stale_detection_result import StaleDetectionResult
-from src.des.domain.stale_execution import StaleExecution
+from des.domain.stale_detection_result import StaleDetectionResult
+from des.domain.stale_execution import StaleExecution
 
 
 class StaleExecutionDetector:

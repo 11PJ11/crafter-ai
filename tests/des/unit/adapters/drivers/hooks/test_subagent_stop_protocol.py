@@ -16,7 +16,7 @@ The adapter must:
 import json
 import os
 
-from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
+from des.adapters.drivers.hooks.claude_code_hook_adapter import (
     extract_des_context_from_transcript,
     handle_subagent_stop,
 )

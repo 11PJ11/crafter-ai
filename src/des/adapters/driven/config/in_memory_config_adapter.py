@@ -5,7 +5,7 @@ Provides hardcoded configuration values for testing environments,
 allowing predictable test behavior.
 """
 
-from src.des.ports.driven_ports.config_port import ConfigPort
+from des.ports.driven_ports.config_port import ConfigPort
 
 
 class InMemoryConfigAdapter(ConfigPort):

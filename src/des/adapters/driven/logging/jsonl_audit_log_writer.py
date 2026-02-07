@@ -22,7 +22,7 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
-from src.des.ports.driven_ports.audit_log_writer import AuditEvent, AuditLogWriter
+from des.ports.driven_ports.audit_log_writer import AuditEvent, AuditLogWriter
 
 
 class JsonlAuditLogWriter(AuditLogWriter):

@@ -144,7 +144,7 @@ class TestPreInvocationLimitsValidation:
             json.dump(step_data, f, indent=2)
 
         # WHEN: Orchestrator validates limits
-        from src.des.application.orchestrator import DESOrchestrator
+        from des.application.orchestrator import DESOrchestrator
 
         orchestrator = DESOrchestrator()
 
@@ -203,7 +203,7 @@ class TestPreInvocationLimitsValidation:
             json.dump(step_data, f, indent=2)
 
         # WHEN: Orchestrator validates limits
-        from src.des.application.orchestrator import DESOrchestrator
+        from des.application.orchestrator import DESOrchestrator
 
         orchestrator = DESOrchestrator()
 

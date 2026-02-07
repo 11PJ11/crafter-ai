@@ -45,7 +45,7 @@ class ValidationErrorDetector:
 
     def __init__(self):
         """Initialize detector with schema loader."""
-        from src.des.domain.tdd_schema import get_tdd_schema
+        from des.domain.tdd_schema import get_tdd_schema
 
         self._schema = get_tdd_schema()
         self.VALID_PHASE_SEQUENCE = self._schema.tdd_phases

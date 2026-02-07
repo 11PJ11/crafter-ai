@@ -380,7 +380,7 @@ class TestTurnDisciplineValidation:
         Expected Error:
         "MISSING: Mandatory section 'TIMEOUT_INSTRUCTION' not found"
         """
-        from src.des.application.prompt_validator import PromptValidator
+        from des.application.prompt_validator import PromptValidator
 
         # GIVEN: Prompt missing TIMEOUT_INSTRUCTION
         incomplete_prompt = """

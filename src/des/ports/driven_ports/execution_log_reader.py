@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from src.des.domain.phase_event import PhaseEvent
+from des.domain.phase_event import PhaseEvent
 
 
 class LogFileNotFound(Exception):

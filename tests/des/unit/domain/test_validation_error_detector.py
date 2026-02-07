@@ -23,7 +23,7 @@ class TestValidationErrorDetector:
         Acceptance Criteria (AC-005.1):
         - Detector can be created and used to validate step files
         """
-        from src.des.domain.validation_error_detector import ValidationErrorDetector
+        from des.domain.validation_error_detector import ValidationErrorDetector
 
         detector = ValidationErrorDetector()
         assert detector is not None
@@ -39,7 +39,7 @@ class TestValidationErrorDetector:
         - Identifies missing required step file fields
         - Error message specifies which field is missing
         """
-        from src.des.domain.validation_error_detector import ValidationErrorDetector
+        from des.domain.validation_error_detector import ValidationErrorDetector
 
         detector = ValidationErrorDetector()
 
@@ -72,7 +72,7 @@ class TestValidationErrorDetector:
         - Example: Terminal phase before REVIEW is invalid
         - Example: Later phase before earlier phase is invalid
         """
-        from src.des.domain.validation_error_detector import ValidationErrorDetector
+        from des.domain.validation_error_detector import ValidationErrorDetector
 
         detector = ValidationErrorDetector()
 
@@ -113,7 +113,7 @@ class TestValidationErrorDetector:
         - Empty acceptance_criteria is invalid
         - Must have concrete, testable criteria
         """
-        from src.des.domain.validation_error_detector import ValidationErrorDetector
+        from des.domain.validation_error_detector import ValidationErrorDetector
 
         detector = ValidationErrorDetector()
 
@@ -147,7 +147,7 @@ class TestValidationErrorDetector:
         Example (BAD): "Fix your step file"
         Example (GOOD): "Add 'acceptance_criteria' field with comma-separated AC statements like 'Detects missing fields, Generates recovery suggestions'"
         """
-        from src.des.domain.validation_error_detector import ValidationErrorDetector
+        from des.domain.validation_error_detector import ValidationErrorDetector
 
         detector = ValidationErrorDetector()
 
@@ -184,7 +184,7 @@ class TestValidationErrorDetector:
         Scenario: Phases 0-2 complete (EXECUTED), phase 3 incomplete (IN_PROGRESS),
                  remaining phases missing
         """
-        from src.des.domain.validation_error_detector import ValidationErrorDetector
+        from des.domain.validation_error_detector import ValidationErrorDetector
 
         detector = ValidationErrorDetector()
 

@@ -20,15 +20,15 @@ Core Components:
 
 For backward compatibility, this module re-exports all key classes and interfaces.
 New code should import from the specific layer packages:
-  - from src.des.domain import TimeoutMonitor, TurnCounter
-  - from src.des.application import DESOrchestrator, TemplateValidator
-  - from src.des.ports.driver_ports import HookPort, ValidatorPort
-  - from src.des.ports.driven_ports import ConfigPort, FileSystemPort, TimeProvider
-  - from src.des.adapters.driven import EnvironmentConfigAdapter
+  - from des.domain import TimeoutMonitor, TurnCounter
+  - from des.application import DESOrchestrator, TemplateValidator
+  - from des.ports.driver_ports import HookPort, ValidatorPort
+  - from des.ports.driven_ports import ConfigPort, FileSystemPort, TimeProvider
+  - from des.adapters.driven import EnvironmentConfigAdapter
 """
 
 # Re-export all key classes for backward compatibility
-from src.des.adapters.driven import (
+from des.adapters.driven import (
     ClaudeCodeTaskAdapter,
     EnvironmentConfigAdapter,
     InMemoryConfigAdapter,
@@ -38,23 +38,23 @@ from src.des.adapters.driven import (
     StructuredLogger,
     SystemTimeProvider,
 )
-from src.des.application.config_loader import ConfigLoader
-from src.des.application.orchestrator import DESOrchestrator, HookPort
-from src.des.application.validator import TDDPhaseValidator, TemplateValidator
-from src.des.domain import (
+from des.application.config_loader import ConfigLoader
+from des.application.orchestrator import DESOrchestrator, HookPort
+from des.application.validator import TDDPhaseValidator, TemplateValidator
+from des.domain import (
     InvocationLimitsResult,
     InvocationLimitsValidator,
     TimeoutMonitor,
     TurnCounter,
 )
-from src.des.ports.driven_ports import (
+from des.ports.driven_ports import (
     ConfigPort,
     FileSystemPort,
     LoggingPort,
     TaskInvocationPort,
     TimeProvider,
 )
-from src.des.ports.driver_ports import ValidatorPort
+from des.ports.driver_ports import ValidatorPort
 
 
 # Backward compatibility aliases

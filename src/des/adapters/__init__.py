@@ -6,7 +6,7 @@ for both production and test environments. Organized into driver (inbound)
 and driven (outbound) adapters following hexagonal architecture.
 """
 
-from src.des.adapters.driven import (
+from des.adapters.driven import (
     ClaudeCodeTaskAdapter,
     EnvironmentConfigAdapter,
     InMemoryConfigAdapter,

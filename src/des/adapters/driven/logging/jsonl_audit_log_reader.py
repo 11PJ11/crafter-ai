@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from src.des.ports.driven_ports.audit_log_reader import AuditLogReader
+from des.ports.driven_ports.audit_log_reader import AuditLogReader
 
 
 class JsonlAuditLogReader(AuditLogReader):

@@ -8,16 +8,16 @@ This service implements the PreToolUsePort driver port interface.
 
 from __future__ import annotations
 
-from src.des.domain.des_marker_parser import DesMarkerParser
-from src.des.domain.max_turns_policy import MaxTurnsPolicy
-from src.des.ports.driven_ports.audit_log_writer import AuditEvent, AuditLogWriter
-from src.des.ports.driven_ports.time_provider_port import TimeProvider
-from src.des.ports.driver_ports.pre_tool_use_port import (
+from des.domain.des_marker_parser import DesMarkerParser
+from des.domain.max_turns_policy import MaxTurnsPolicy
+from des.ports.driven_ports.audit_log_writer import AuditEvent, AuditLogWriter
+from des.ports.driven_ports.time_provider_port import TimeProvider
+from des.ports.driver_ports.pre_tool_use_port import (
     HookDecision,
     PreToolUseInput,
     PreToolUsePort,
 )
-from src.des.ports.driver_ports.validator_port import ValidatorPort
+from des.ports.driver_ports.validator_port import ValidatorPort
 
 
 class PreToolUseService(PreToolUsePort):

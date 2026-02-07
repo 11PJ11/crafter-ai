@@ -1,7 +1,7 @@
 """Time provider driven adapters."""
 
-from src.des.adapters.driven.time.mocked_time import MockedTimeProvider
-from src.des.adapters.driven.time.system_time import SystemTimeProvider
+from des.adapters.driven.time.mocked_time import MockedTimeProvider
+from des.adapters.driven.time.system_time import SystemTimeProvider
 
 
 # Backward compatibility alias

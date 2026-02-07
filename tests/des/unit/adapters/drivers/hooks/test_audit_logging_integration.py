@@ -72,7 +72,7 @@ class TestAuditLoggingIntegration:
         mock_time_provider.now_utc.return_value = mock_datetime
 
         with patch(
-            "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
+            "des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
         ) as mock_validator_class:
             mock_validator_instance = Mock()
             mock_validator_instance.validate_scope.return_value = mock_scope_result
@@ -155,7 +155,7 @@ class TestAuditLoggingIntegration:
         mock_time_provider.now_utc.return_value = mock_datetime
 
         with patch(
-            "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
+            "des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
         ) as mock_validator_class:
             mock_validator_instance = Mock()
             mock_validator_instance.validate_scope.return_value = mock_scope_result
@@ -225,7 +225,7 @@ class TestAuditLoggingIntegration:
         mock_time_provider.now_utc.return_value = mock_datetime
 
         with patch(
-            "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
+            "des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
         ) as mock_validator_class:
             mock_validator_instance = Mock()
             mock_validator_instance.validate_scope.return_value = mock_scope_result
@@ -294,7 +294,7 @@ class TestAuditLoggingIntegration:
         mock_time_provider.now_utc.return_value = mock_datetime
 
         with patch(
-            "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
+            "des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
         ) as mock_validator_class:
             mock_validator_instance = Mock()
             mock_validator_instance.validate_scope.return_value = mock_scope_result

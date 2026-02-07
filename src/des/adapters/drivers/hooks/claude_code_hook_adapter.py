@@ -34,20 +34,20 @@ if __name__ == "__main__":
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
 
-from src.des.adapters.driven.hooks.yaml_execution_log_reader import (
+from des.adapters.driven.hooks.yaml_execution_log_reader import (
     YamlExecutionLogReader,
 )
-from src.des.adapters.driven.logging.jsonl_audit_log_writer import JsonlAuditLogWriter
-from src.des.adapters.driven.time.system_time import SystemTimeProvider
-from src.des.adapters.driven.validation.git_scope_checker import GitScopeChecker
-from src.des.application.pre_tool_use_service import PreToolUseService
-from src.des.application.subagent_stop_service import SubagentStopService
-from src.des.application.validator import TemplateValidator
-from src.des.domain.des_marker_parser import DesMarkerParser
-from src.des.domain.max_turns_policy import MaxTurnsPolicy
-from src.des.domain.step_completion_validator import StepCompletionValidator
-from src.des.domain.tdd_schema import get_tdd_schema
-from src.des.ports.driver_ports.pre_tool_use_port import PreToolUseInput
+from des.adapters.driven.logging.jsonl_audit_log_writer import JsonlAuditLogWriter
+from des.adapters.driven.time.system_time import SystemTimeProvider
+from des.adapters.driven.validation.git_scope_checker import GitScopeChecker
+from des.application.pre_tool_use_service import PreToolUseService
+from des.application.subagent_stop_service import SubagentStopService
+from des.application.validator import TemplateValidator
+from des.domain.des_marker_parser import DesMarkerParser
+from des.domain.max_turns_policy import MaxTurnsPolicy
+from des.domain.step_completion_validator import StepCompletionValidator
+from des.domain.tdd_schema import get_tdd_schema
+from des.ports.driver_ports.pre_tool_use_port import PreToolUseInput
 
 
 def create_pre_tool_use_service() -> PreToolUseService:
@@ -294,7 +294,7 @@ def handle_subagent_stop() -> int:
         stop_hook_active = bool(hook_input.get("stop_hook_active", False))
 
         # Delegate to application service
-        from src.des.ports.driver_ports.subagent_stop_port import SubagentStopContext
+        from des.ports.driver_ports.subagent_stop_port import SubagentStopContext
 
         service = create_subagent_stop_service()
         decision = service.validate(
@@ -383,10 +383,10 @@ def handle_post_tool_use() -> int:
             return 0
 
         # Delegate to PostToolUseService
-        from src.des.adapters.driven.logging.jsonl_audit_log_reader import (
+        from des.adapters.driven.logging.jsonl_audit_log_reader import (
             JsonlAuditLogReader,
         )
-        from src.des.application.post_tool_use_service import PostToolUseService
+        from des.application.post_tool_use_service import PostToolUseService
 
         reader = JsonlAuditLogReader()
         service = PostToolUseService(audit_reader=reader)

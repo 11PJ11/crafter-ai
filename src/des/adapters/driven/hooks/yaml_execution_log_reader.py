@@ -11,13 +11,13 @@ from __future__ import annotations
 
 import yaml
 
-from src.des.domain.phase_event import PhaseEventParser
-from src.des.ports.driven_ports.execution_log_reader import (
+from des.domain.phase_event import PhaseEventParser
+from des.ports.driven_ports.execution_log_reader import (
     ExecutionLogReader,
     LogFileCorrupted,
     LogFileNotFound,
 )
-from src.des.domain.phase_event import PhaseEvent
+from des.domain.phase_event import PhaseEvent
 
 
 class YamlExecutionLogReader(ExecutionLogReader):

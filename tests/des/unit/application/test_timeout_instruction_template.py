@@ -8,7 +8,7 @@ Tests verify that the TIMEOUT_INSTRUCTION content includes all 4 required elemen
 4. Turn logging instruction
 """
 
-from src.des.domain.timeout_instruction_template import TimeoutInstructionTemplate
+from des.domain.timeout_instruction_template import TimeoutInstructionTemplate
 
 
 class TestTimeoutInstructionTemplateStructure:

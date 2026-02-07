@@ -19,7 +19,7 @@ def test_task_invocation_port_interface_defines_required_methods():
     # Verify it's an abstract base class
     from abc import ABC
 
-    from src.des.ports.driven_ports.task_invocation_port import TaskInvocationPort
+    from des.ports.driven_ports.task_invocation_port import TaskInvocationPort
 
     assert issubclass(TaskInvocationPort, ABC)
 
@@ -35,7 +35,7 @@ def test_mocked_task_adapter_returns_predefined_results():
     When: invoke_task is called
     Then: Predefined result is returned
     """
-    from src.des.adapters.driven.task_invocation.mocked_task_adapter import (
+    from des.adapters.driven.task_invocation.mocked_task_adapter import (
         MockedTaskAdapter,
     )
 
@@ -60,7 +60,7 @@ def test_mocked_task_adapter_supports_multiple_results():
     When: invoke_task is called multiple times
     Then: Results are returned in sequence
     """
-    from src.des.adapters.driven.task_invocation.mocked_task_adapter import (
+    from des.adapters.driven.task_invocation.mocked_task_adapter import (
         MockedTaskAdapter,
     )
 
@@ -94,10 +94,10 @@ def test_mocked_task_adapter_implements_task_invocation_port():
     When: Class is inspected
     Then: It is an instance of TaskInvocationPort
     """
-    from src.des.adapters.driven.task_invocation.mocked_task_adapter import (
+    from des.adapters.driven.task_invocation.mocked_task_adapter import (
         MockedTaskAdapter,
     )
-    from src.des.ports.driven_ports.task_invocation_port import TaskInvocationPort
+    from des.ports.driven_ports.task_invocation_port import TaskInvocationPort
 
     adapter = MockedTaskAdapter()
     assert isinstance(adapter, TaskInvocationPort)
@@ -111,10 +111,10 @@ def test_claude_code_task_adapter_implements_task_invocation_port():
     When: Class is inspected
     Then: It is an instance of TaskInvocationPort
     """
-    from src.des.adapters.driven.task_invocation.claude_code_task_adapter import (
+    from des.adapters.driven.task_invocation.claude_code_task_adapter import (
         ClaudeCodeTaskAdapter,
     )
-    from src.des.ports.driven_ports.task_invocation_port import TaskInvocationPort
+    from des.ports.driven_ports.task_invocation_port import TaskInvocationPort
 
     adapter = ClaudeCodeTaskAdapter()
     assert isinstance(adapter, TaskInvocationPort)

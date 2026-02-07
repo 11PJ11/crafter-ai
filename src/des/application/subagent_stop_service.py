@@ -11,17 +11,17 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from src.des.domain.step_completion_validator import StepCompletionValidator
-from src.des.ports.driven_ports.audit_log_writer import AuditEvent, AuditLogWriter
-from src.des.ports.driven_ports.execution_log_reader import (
+from des.domain.step_completion_validator import StepCompletionValidator
+from des.ports.driven_ports.audit_log_writer import AuditEvent, AuditLogWriter
+from des.ports.driven_ports.execution_log_reader import (
     ExecutionLogReader,
     LogFileCorrupted,
     LogFileNotFound,
 )
-from src.des.ports.driven_ports.scope_checker import ScopeChecker
-from src.des.ports.driven_ports.time_provider_port import TimeProvider
-from src.des.ports.driver_ports.pre_tool_use_port import HookDecision
-from src.des.ports.driver_ports.subagent_stop_port import (
+from des.ports.driven_ports.scope_checker import ScopeChecker
+from des.ports.driven_ports.time_provider_port import TimeProvider
+from des.ports.driver_ports.pre_tool_use_port import HookDecision
+from des.ports.driver_ports.subagent_stop_port import (
     SubagentStopContext,
     SubagentStopPort,
 )

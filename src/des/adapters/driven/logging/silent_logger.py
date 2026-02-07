@@ -7,7 +7,7 @@ log output is not needed or desired.
 
 from typing import Any
 
-from src.des.ports.driven_ports.logging_port import LoggingPort
+from des.ports.driven_ports.logging_port import LoggingPort
 
 
 class SilentLogger(LoggingPort):

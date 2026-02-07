@@ -63,7 +63,7 @@ class TestScopeValidationIntegration:
         hook = RealSubagentStopHook()
 
         with patch(
-            "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
+            "des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
         ) as MockValidator:
             mock_validator_instance = MockValidator.return_value
             mock_validator_instance.validate_scope.return_value = ScopeValidationResult(
@@ -112,7 +112,7 @@ class TestScopeValidationIntegration:
         hook = RealSubagentStopHook()
 
         with patch(
-            "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
+            "des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
         ) as MockValidator:
             mock_validator_instance = MockValidator.return_value
             mock_validator_instance.validate_scope.return_value = ScopeValidationResult(
@@ -165,10 +165,10 @@ class TestScopeValidationIntegration:
 
         with (
             patch(
-                "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
+                "des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
             ) as MockValidator,
             patch(
-                "src.des.adapters.driven.hooks.subagent_stop_hook.logger"
+                "des.adapters.driven.hooks.subagent_stop_hook.logger"
             ) as mock_logger,
         ):
             mock_validator_instance = MockValidator.return_value
@@ -224,10 +224,10 @@ class TestScopeValidationIntegration:
 
         with (
             patch(
-                "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
+                "des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
             ) as MockValidator,
             patch(
-                "src.des.adapters.driven.hooks.subagent_stop_hook.logger"
+                "des.adapters.driven.hooks.subagent_stop_hook.logger"
             ) as mock_logger,
         ):
             mock_validator_instance = MockValidator.return_value
@@ -284,7 +284,7 @@ class TestScopeValidationIntegration:
         hook = RealSubagentStopHook()
 
         with patch(
-            "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
+            "des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
         ) as MockValidator:
             mock_validator_instance = MockValidator.return_value
             expected_result = ScopeValidationResult(

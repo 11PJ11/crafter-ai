@@ -8,7 +8,7 @@ This module contains step definitions for testing:
 - Package structure validation
 
 Domain: Import Path Validation
-Bug: Installed DES uses "from src.des..." imports which only work with
+Bug: Installed DES uses "from des..." imports which only work with
      PYTHONPATH pointing to dev directory
 """
 

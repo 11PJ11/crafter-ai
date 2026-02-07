@@ -1,6 +1,6 @@
 """Test implementation of post-execution hook adapter."""
 
-from src.des.application.orchestrator import HookPort, HookResult
+from des.application.orchestrator import HookPort, HookResult
 
 
 class MockedSubagentStopHook(HookPort):

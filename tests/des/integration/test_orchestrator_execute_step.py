@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
-from src.des.application.orchestrator import DESOrchestrator
+from des.application.orchestrator import DESOrchestrator
 
 
 class TestOrchestratorExecuteStep:

@@ -17,7 +17,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
-from src.des.application.stale_resolver import StaleResolver
+from des.application.stale_resolver import StaleResolver
 
 
 class TestStaleResolverInitialization:

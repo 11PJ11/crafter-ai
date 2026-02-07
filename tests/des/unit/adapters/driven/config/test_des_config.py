@@ -27,7 +27,7 @@ audit_logging_enabled: true
         monkeypatch.setenv("HOME", str(tmp_path))
 
         # Act: Load DESConfig (should read from config file)
-        from src.des.adapters.driven.config.des_config import DESConfig
+        from des.adapters.driven.config.des_config import DESConfig
 
         config = DESConfig()
 
@@ -48,7 +48,7 @@ audit_logging_enabled: false
         monkeypatch.setenv("HOME", str(tmp_path))
 
         # Act: Load DESConfig
-        from src.des.adapters.driven.config.des_config import DESConfig
+        from des.adapters.driven.config.des_config import DESConfig
 
         config = DESConfig()
 
@@ -68,7 +68,7 @@ class TestDESConfigFallsBackToSafeDefaults:
         monkeypatch.setenv("HOME", str(tmp_path))
 
         # Act: Load DESConfig (should use defaults)
-        from src.des.adapters.driven.config.des_config import DESConfig
+        from des.adapters.driven.config.des_config import DESConfig
 
         config = DESConfig()
 
@@ -87,7 +87,7 @@ class TestDESConfigFallsBackToSafeDefaults:
         monkeypatch.setenv("HOME", str(tmp_path))
 
         # Act: Load DESConfig (should fall back to defaults)
-        from src.des.adapters.driven.config.des_config import DESConfig
+        from des.adapters.driven.config.des_config import DESConfig
 
         config = DESConfig()
 
@@ -108,7 +108,7 @@ some_other_setting: value
         monkeypatch.setenv("HOME", str(tmp_path))
 
         # Act: Load DESConfig
-        from src.des.adapters.driven.config.des_config import DESConfig
+        from des.adapters.driven.config.des_config import DESConfig
 
         config = DESConfig()
 
@@ -129,7 +129,7 @@ class TestDESConfigCreatesDefaultConfigFile:
         monkeypatch.setenv("HOME", str(tmp_path))
 
         # Act: Load DESConfig (should create default config file)
-        from src.des.adapters.driven.config.des_config import DESConfig
+        from des.adapters.driven.config.des_config import DESConfig
 
         _ = DESConfig()
 
@@ -145,7 +145,7 @@ class TestDESConfigCreatesDefaultConfigFile:
         monkeypatch.setenv("HOME", str(tmp_path))
 
         # Act: Load DESConfig (should create default config file with comments)
-        from src.des.adapters.driven.config.des_config import DESConfig
+        from des.adapters.driven.config.des_config import DESConfig
 
         _ = DESConfig()
 
@@ -163,7 +163,7 @@ class TestDESConfigCreatesDefaultConfigFile:
         monkeypatch.setenv("HOME", str(tmp_path))
 
         # Act: Load DESConfig
-        from src.des.adapters.driven.config.des_config import DESConfig
+        from des.adapters.driven.config.des_config import DESConfig
 
         _ = DESConfig()
 

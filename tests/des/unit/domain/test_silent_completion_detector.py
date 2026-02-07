@@ -16,7 +16,7 @@ ACCEPTANCE CRITERIA:
 - AC-005.1: Explains OUTCOME_RECORDING requirement
 """
 
-from src.des.domain.silent_completion_detector import SilentCompletionDetector
+from des.domain.silent_completion_detector import SilentCompletionDetector
 
 
 class TestSilentCompletionDetectorExists:

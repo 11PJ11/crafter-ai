@@ -13,7 +13,7 @@ def _patch_log_audit_event():
     """Patch _log_audit_event at module level to capture calls."""
     mock_log = Mock()
     log_patch = patch(
-        "src.des.application.orchestrator._log_audit_event",
+        "des.application.orchestrator._log_audit_event",
         mock_log,
     )
     return log_patch, mock_log

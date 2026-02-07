@@ -15,15 +15,15 @@ from pathlib import Path
 
 import pytest
 
-from src.des.application.subagent_stop_service import SubagentStopService
-from src.des.domain.phase_event import PhaseEvent
-from src.des.domain.step_completion_validator import StepCompletionValidator
-from src.des.domain.tdd_schema import get_tdd_schema
-from src.des.ports.driven_ports.audit_log_writer import AuditEvent, AuditLogWriter
-from src.des.ports.driven_ports.execution_log_reader import ExecutionLogReader
-from src.des.ports.driven_ports.scope_checker import ScopeChecker, ScopeCheckResult
-from src.des.ports.driven_ports.time_provider_port import TimeProvider
-from src.des.ports.driver_ports.subagent_stop_port import SubagentStopContext
+from des.application.subagent_stop_service import SubagentStopService
+from des.domain.phase_event import PhaseEvent
+from des.domain.step_completion_validator import StepCompletionValidator
+from des.domain.tdd_schema import get_tdd_schema
+from des.ports.driven_ports.audit_log_writer import AuditEvent, AuditLogWriter
+from des.ports.driven_ports.execution_log_reader import ExecutionLogReader
+from des.ports.driven_ports.scope_checker import ScopeChecker, ScopeCheckResult
+from des.ports.driven_ports.time_provider_port import TimeProvider
+from des.ports.driver_ports.subagent_stop_port import SubagentStopContext
 
 
 # --- Test doubles (driven port implementations) ---

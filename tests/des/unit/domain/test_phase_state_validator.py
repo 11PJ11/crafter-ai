@@ -25,7 +25,7 @@ class TestPhaseStateValidator:
         Acceptance Criteria (AC-005.1):
         - Validator can be created and used to detect invalid phase states
         """
-        from src.des.domain.phase_state_validator import PhaseStateValidator
+        from des.domain.phase_state_validator import PhaseStateValidator
 
         validator = PhaseStateValidator()
         assert validator is not None
@@ -49,7 +49,7 @@ class TestPhaseStateValidator:
             "outcome": null  # INVALID: EXECUTED requires outcome
         }
         """
-        from src.des.domain.phase_state_validator import PhaseStateValidator
+        from des.domain.phase_state_validator import PhaseStateValidator
 
         validator = PhaseStateValidator()
 
@@ -87,7 +87,7 @@ class TestPhaseStateValidator:
             "blocked_by": null  # INVALID: SKIPPED requires blocked_by
         }
         """
-        from src.des.domain.phase_state_validator import PhaseStateValidator
+        from des.domain.phase_state_validator import PhaseStateValidator
 
         validator = PhaseStateValidator()
 
@@ -124,7 +124,7 @@ class TestPhaseStateValidator:
         2. HOW: Add a descriptive outcome (e.g., "Implementation complete, all tests passing")
         3. ACTIONABLE: Update phase.outcome with brief description of what was done
         """
-        from src.des.domain.phase_state_validator import PhaseStateValidator
+        from des.domain.phase_state_validator import PhaseStateValidator
 
         validator = PhaseStateValidator()
 
@@ -175,7 +175,7 @@ class TestPhaseStateValidator:
         2. HOW: Add a reason code (e.g., "CHECKPOINT_PENDING", "NOT_APPLICABLE")
         3. ACTIONABLE: Update phase.blocked_by with skip reason from approved list
         """
-        from src.des.domain.phase_state_validator import PhaseStateValidator
+        from des.domain.phase_state_validator import PhaseStateValidator
 
         validator = PhaseStateValidator()
 
@@ -226,7 +226,7 @@ class TestPhaseStateValidator:
         - blocked_by: One of: CHECKPOINT_PENDING, NOT_APPLICABLE, {reason}
         - Example: "Set blocked_by to 'NOT_APPLICABLE: Utility detector needs no patterns'"
         """
-        from src.des.domain.phase_state_validator import PhaseStateValidator
+        from des.domain.phase_state_validator import PhaseStateValidator
 
         validator = PhaseStateValidator()
 

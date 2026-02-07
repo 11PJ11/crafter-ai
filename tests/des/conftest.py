@@ -27,7 +27,7 @@ def tdd_schema():
             - valid_skip_prefixes: Skip prefixes that allow commit
             - blocking_skip_prefixes: Skip prefixes that block commit
     """
-    from src.des.domain.tdd_schema import get_tdd_schema
+    from des.domain.tdd_schema import get_tdd_schema
 
     return get_tdd_schema()
 
@@ -255,7 +255,7 @@ def in_memory_filesystem():
     Returns:
         InMemoryFileSystem: Fresh in-memory filesystem instance
     """
-    from src.des.adapters.driven.filesystem.in_memory_filesystem import (
+    from des.adapters.driven.filesystem.in_memory_filesystem import (
         InMemoryFileSystem,
     )
 
@@ -272,7 +272,7 @@ def mocked_time_provider():
     """
     from datetime import datetime, timezone
 
-    from src.des.adapters.driven.time.mocked_time import MockedTimeProvider
+    from des.adapters.driven.time.mocked_time import MockedTimeProvider
 
     return MockedTimeProvider(datetime(2026, 1, 26, 10, 0, 0, tzinfo=timezone.utc))
 
@@ -285,7 +285,7 @@ def mocked_hook():
     Returns:
         MockedSubagentStopHook: Hook that returns predefined results
     """
-    from src.des.adapters.drivers.hooks.mocked_hook import MockedSubagentStopHook
+    from des.adapters.drivers.hooks.mocked_hook import MockedSubagentStopHook
 
     return MockedSubagentStopHook()
 
@@ -298,7 +298,7 @@ def mocked_validator():
     Returns:
         MockedTemplateValidator: Validator returning passing results by default
     """
-    from src.des.adapters.drivers.validators.mocked_validator import (
+    from des.adapters.drivers.validators.mocked_validator import (
         MockedTemplateValidator,
     )
 
@@ -363,7 +363,7 @@ def des_orchestrator(
     Returns:
         DESOrchestrator: Configured orchestrator with mocked dependencies
     """
-    from src.des.application.orchestrator import DESOrchestrator
+    from des.application.orchestrator import DESOrchestrator
 
     return DESOrchestrator(
         hook=mocked_hook,
@@ -385,8 +385,8 @@ def scenario_des_orchestrator(mocked_hook, mocked_validator, mocked_time_provide
     Returns:
         DESOrchestrator: Configured orchestrator with real filesystem
     """
-    from src.des.adapters.driven.filesystem.real_filesystem import RealFileSystem
-    from src.des.application.orchestrator import DESOrchestrator
+    from des.adapters.driven.filesystem.real_filesystem import RealFileSystem
+    from des.application.orchestrator import DESOrchestrator
 
     return DESOrchestrator(
         hook=mocked_hook,

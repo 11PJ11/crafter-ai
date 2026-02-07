@@ -20,8 +20,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from src.des.domain.phase_event import PhaseEvent
-from src.des.domain.tdd_schema import TDDSchema
+from des.domain.phase_event import PhaseEvent
+from des.domain.tdd_schema import TDDSchema
 
 
 @dataclass(frozen=True)

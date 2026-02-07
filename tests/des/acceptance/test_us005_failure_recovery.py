@@ -28,7 +28,7 @@ SOURCE:
 """
 
 import pytest
-from src.des.application.recovery_guidance_handler import RecoveryGuidanceHandler
+from des.application.recovery_guidance_handler import RecoveryGuidanceHandler
 
 
 class TestFailureRecoveryGuidance:
@@ -67,7 +67,7 @@ class TestFailureRecoveryGuidance:
         abandoned_phase = "GREEN_UNIT"
 
         # Act: RecoveryGuidanceHandler generates suggestions for abandoned phase
-        from src.des.application.recovery_guidance_handler import (
+        from des.application.recovery_guidance_handler import (
             RecoveryGuidanceHandler,
         )
 
@@ -145,7 +145,7 @@ class TestFailureRecoveryGuidance:
         step_file = step_file_with_silent_completion
 
         # Act: RecoveryGuidanceHandler detects silent completion
-        from src.des.application.recovery_guidance_handler import (
+        from des.application.recovery_guidance_handler import (
             RecoveryGuidanceHandler,
         )
 
@@ -297,7 +297,7 @@ class TestFailureRecoveryGuidance:
         import json
 
         # Act 1: Simulate SubagentStop hook detecting abandoned phase
-        from src.des.application.recovery_guidance_handler import (
+        from des.application.recovery_guidance_handler import (
             RecoveryGuidanceHandler,
         )
 
@@ -530,7 +530,7 @@ class TestFailureRecoveryGuidance:
          FIX: Add BOUNDARY_RULES section with ALLOWED and FORBIDDEN file patterns."
         """
         # Arrange: Create validator and prompt missing BOUNDARY_RULES
-        from src.des.application.validator import TemplateValidator
+        from des.application.validator import TemplateValidator
 
         prompt_missing_boundary_rules = """
 # DES_METADATA
@@ -673,7 +673,7 @@ Update step file with phase completion
         - Helps junior developers understand failure patterns
         """
         # Act: Recovery handler generates suggestions with explanatory text
-        from src.des.application.recovery_guidance_handler import (
+        from des.application.recovery_guidance_handler import (
             RecoveryGuidanceHandler,
         )
 
@@ -725,7 +725,7 @@ Update step file with phase completion
         - Helps junior developers learn recovery patterns
         """
         # Act: Recovery handler generates suggestions with HOW explanation
-        from src.des.application.recovery_guidance_handler import (
+        from des.application.recovery_guidance_handler import (
             RecoveryGuidanceHandler,
         )
 
@@ -781,7 +781,7 @@ Update step file with phase completion
         - Minimum 1 sentence for each aspect
         """
         # Act: Recovery guidance generated
-        from src.des.application.recovery_guidance_handler import (
+        from des.application.recovery_guidance_handler import (
             RecoveryGuidanceHandler,
         )
 
@@ -849,7 +849,7 @@ Update step file with phase completion
         actual_runtime_minutes = 35
 
         # Act: RecoveryGuidanceHandler detects and handles timeout failure
-        from src.des.application.recovery_guidance_handler import (
+        from des.application.recovery_guidance_handler import (
             RecoveryGuidanceHandler,
         )
 
@@ -992,7 +992,7 @@ Update step file with phase completion
                        to try again from the start."
         """
         # Arrange: Recovery suggestions for abandoned phase failure
-        from src.des.application.recovery_guidance_handler import (
+        from des.application.recovery_guidance_handler import (
             RecoveryGuidanceHandler,
         )
 

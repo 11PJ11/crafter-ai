@@ -135,7 +135,7 @@ class TDDPhaseValidator:
 
     def __init__(self):
         """Initialize validator with schema loader."""
-        from src.des.domain.tdd_schema import get_tdd_schema
+        from des.domain.tdd_schema import get_tdd_schema
 
         self._schema = get_tdd_schema()
         self.MANDATORY_PHASES = self._schema.tdd_phases
@@ -256,7 +256,7 @@ class ExecutionLogValidator:
 
     def __init__(self):
         """Initialize validator with schema loader."""
-        from src.des.domain.tdd_schema import get_tdd_schema
+        from des.domain.tdd_schema import get_tdd_schema
 
         self._schema = get_tdd_schema()
 
