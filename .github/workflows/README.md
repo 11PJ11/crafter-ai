@@ -9,7 +9,7 @@ automatic semantic versioning on master, tag-gated releases, and Slack state-mac
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4A90D9', 'lineColor': '#555'}}}%%
 flowchart TD
     subgraph trigger["Triggers"]
-        T1["push: master, develop, installer"]
+        T1["push: master, develop"]
         T2["push: tags v*"]
         T3["pull_request: master, develop"]
     end
@@ -84,7 +84,7 @@ flowchart TD
 
 | Event | Branches / Patterns | Notes |
 |-------|---------------------|-------|
-| `push` | `master`, `develop`, `installer` | Full pipeline (Stages 1-4); Stage 5 auto-tags on master |
+| `push` | `master`, `develop` | Full pipeline (Stages 1-4); Stage 5 auto-tags on master |
 | `push` (tag) | `v*` | Full pipeline + Build + Release (Stages 1-4, 6-7). Tags are created automatically by Stage 5. |
 | `pull_request` | `master`, `develop` | Full pipeline (Stages 1-4) |
 
