@@ -169,39 +169,35 @@ class TDDPhaseValidator:
         errors = []
 
         for phase in self.MANDATORY_PHASES:
-            # Check if phase appears in a non-comment context
-            # Specifically exclude lines starting with "# MISSING:" or containing "MISSING:"
-
-            # Find all lines with the phase
-            phase_lines = []
-            for line in prompt.split("\n"):
-                if phase in line:
-                    phase_lines.append(line.strip())
-
-            # Check if any line contains the phase but is NOT a comment about it being missing
-            found = False
-            if phase_lines:
-                for line in phase_lines:
-                    # Skip if it's a "MISSING" comment about this phase or descriptive text mentioning it
-                    if (
-                        re.search(
-                            rf"\(.*\b{phase}\b.*\)", line
-                        )  # (missing COMMIT) format
-                        or re.search(
-                            rf"\b(without|missing|no)\s+{phase}\b", line, re.IGNORECASE
-                        )  # descriptive text
-                        or re.search(rf"# MISSING:\s*{phase}", line)
-                    ):  # comment format
-                        continue
-                    # Phase found in non-missing context
-                    if phase in line:
-                        found = True
-                        break
-
-            if not found:
+            if not self._is_phase_present_in_prompt(phase, prompt):
                 errors.append(f"INCOMPLETE: TDD phase '{phase}' not mentioned")
 
         return errors
+
+    def _is_phase_present_in_prompt(self, phase: str, prompt: str) -> bool:
+        """Check if a phase is mentioned in a non-missing context within the prompt."""
+        lines_containing_phase = [
+            line.strip() for line in prompt.split("\n") if phase in line
+        ]
+
+        for line in lines_containing_phase:
+            if self._is_missing_context(phase, line):
+                continue
+            if phase in line:
+                return True
+
+        return False
+
+    @staticmethod
+    def _is_missing_context(phase: str, line: str) -> bool:
+        """Check if a line only mentions the phase in a 'missing' context."""
+        return bool(
+            re.search(rf"\(.*\b{phase}\b.*\)", line)  # (missing COMMIT) format
+            or re.search(
+                rf"\b(without|missing|no)\s+{phase}\b", line, re.IGNORECASE
+            )  # descriptive text
+            or re.search(rf"# MISSING:\s*{phase}", line)  # comment format
+        )
 
 
 class DESMarkerValidator:
@@ -376,41 +372,46 @@ class ExecutionLogValidator:
             return None
 
         guidance_items = []
-
         for error in errors:
-            if "IN_PROGRESS" in error:
-                # Extract phase name from error message
-                if "Phase" in error:
-                    parts = error.split("Phase ")
-                    if len(parts) > 1:
-                        phase_name = parts[1].split(" ")[0]
-                        guidance_items.append(
-                            f"FIX: Complete or rollback the IN_PROGRESS phase {phase_name}"
-                        )
-            elif "SKIPPED" in error and "blocked_by" in error.lower():
-                if "Phase" in error:
-                    parts = error.split("Phase ")
-                    if len(parts) > 1:
-                        phase_name = parts[1].split(" ")[0]
-                        guidance_items.append(
-                            f"FIX: Add blocked_by reason explaining why phase {phase_name} was skipped"
-                        )
-            elif "EXECUTED" in error and "outcome" in error.lower():
-                if "Phase" in error:
-                    parts = error.split("Phase ")
-                    if len(parts) > 1:
-                        phase_name = parts[1].split(" ")[0]
-                        guidance_items.append(
-                            f"FIX: Add outcome field (PASS/FAIL) to phase {phase_name}"
-                        )
-            elif "NOT_EXECUTED" in error:
-                guidance_items.append(
-                    "FIX: Cannot complete task with NOT_EXECUTED phases. "
-                    "All required phases must be EXECUTED or explicitly SKIPPED with reason"
-                )
+            guidance = self._guidance_for_error(error)
+            if guidance:
+                guidance_items.append(guidance)
 
-        if guidance_items:
-            return guidance_items
+        return guidance_items if guidance_items else None
+
+    @staticmethod
+    def _extract_phase_name_from_error(error: str) -> str | None:
+        """Extract phase name from error message like 'Phase REVIEW ...'."""
+        if "Phase" not in error:
+            return None
+        parts = error.split("Phase ")
+        if len(parts) > 1:
+            return parts[1].split(" ")[0]
+        return None
+
+    def _guidance_for_error(self, error: str) -> str | None:
+        """Generate a single guidance item for an error message."""
+        if "IN_PROGRESS" in error:
+            phase_name = self._extract_phase_name_from_error(error)
+            if phase_name:
+                return f"FIX: Complete or rollback the IN_PROGRESS phase {phase_name}"
+
+        elif "SKIPPED" in error and "blocked_by" in error.lower():
+            phase_name = self._extract_phase_name_from_error(error)
+            if phase_name:
+                return f"FIX: Add blocked_by reason explaining why phase {phase_name} was skipped"
+
+        elif "EXECUTED" in error and "outcome" in error.lower():
+            phase_name = self._extract_phase_name_from_error(error)
+            if phase_name:
+                return f"FIX: Add outcome field (PASS/FAIL) to phase {phase_name}"
+
+        elif "NOT_EXECUTED" in error:
+            return (
+                "FIX: Cannot complete task with NOT_EXECUTED phases. "
+                "All required phases must be EXECUTED or explicitly SKIPPED with reason"
+            )
+
         return None
 
 
@@ -544,83 +545,88 @@ class TemplateValidator:
             "# EXECUTION_LOG_COMPLETE",
         ]
 
-        # Search for all execution log sections in the prompt
         for marker in section_markers:
             if marker not in prompt:
                 continue
 
-            # Extract section content (from marker to next # section or end of text)
-            marker_index = prompt.find(marker)
-            if marker_index == -1:
+            section_content = self._extract_section_content(prompt, marker)
+            if not section_content:
                 continue
 
-            # Find end of section (next # marker or end of string)
-            section_start = marker_index + len(marker)
-            next_marker_index = prompt.find("\n#", section_start)
-            if next_marker_index == -1:
-                section_content = prompt[section_start:]
-            else:
-                section_content = prompt[section_start:next_marker_index]
+            phase_log.extend(self._parse_narrative_format(section_content))
+            phase_log.extend(self._parse_list_format(section_content))
+            phase_log.extend(self._parse_key_value_format(section_content))
 
-            # Parse Format A: Narrative style
-            # Pattern: "Phase PHASE_NAME status: STATUS (optional context)"
-            format_a_matches = re.findall(
-                r"Phase\s+(\w+)\s+status:\s+(\w+)",
-                section_content,
+        return self._deduplicate_phase_log(phase_log)
+
+    @staticmethod
+    def _extract_section_content(prompt: str, marker: str) -> str:
+        """Extract text content between a section marker and the next section."""
+        marker_index = prompt.find(marker)
+        if marker_index == -1:
+            return ""
+
+        section_start = marker_index + len(marker)
+        next_marker_index = prompt.find("\n#", section_start)
+        if next_marker_index == -1:
+            return prompt[section_start:]
+        return prompt[section_start:next_marker_index]
+
+    @staticmethod
+    def _parse_narrative_format(section_content: str) -> list[dict]:
+        """Parse Format A: 'Phase PHASE_NAME status: STATUS (optional context)'."""
+        entries = []
+        matches = re.findall(r"Phase\s+(\w+)\s+status:\s+(\w+)", section_content)
+        for phase_name, status in matches:
+            entries.append({"phase_name": phase_name, "status": status})
+        return entries
+
+    @staticmethod
+    def _parse_list_format(section_content: str) -> list[dict]:
+        """Parse Format B: 'STATUS: PHASE1, PHASE2, ...'."""
+        entries = []
+        statuses = ["EXECUTED", "SKIPPED", "IN_PROGRESS", "NOT_EXECUTED"]
+        for status in statuses:
+            pattern = (
+                status
+                + r":\s+([A-Z0-9_,\s\-]+?)(?=\n|$|EXECUTED|SKIPPED|IN_PROGRESS|NOT_EXECUTED)"
             )
-            for phase_name, status in format_a_matches:
-                phase_log.append({"phase_name": phase_name, "status": status})
+            matches = re.findall(pattern, section_content)
+            for match in matches:
+                phase_names = [p.strip() for p in match.split(",") if p.strip()]
+                for phase_name in phase_names:
+                    if phase_name and re.match(r"^[A-Z0-9_\-]+$", phase_name):
+                        entries.append({"phase_name": phase_name, "status": status})
+        return entries
 
-            # Parse Format B: List style
-            # Pattern: "STATUS: PHASE1, PHASE2, ... \n STATUS: PHASE3, ..."
-            # Split by status keywords: EXECUTED, SKIPPED, IN_PROGRESS, NOT_EXECUTED
-            statuses = ["EXECUTED", "SKIPPED", "IN_PROGRESS", "NOT_EXECUTED"]
-            for status in statuses:
-                pattern = (
-                    status
-                    + r":\s+([A-Z0-9_,\s\-]+?)(?=\n|$|EXECUTED|SKIPPED|IN_PROGRESS|NOT_EXECUTED)"
-                )
-                matches = re.findall(pattern, section_content)
-                for match in matches:
-                    # Split phase names by comma
-                    phase_names = [p.strip() for p in match.split(",") if p.strip()]
-                    for phase_name in phase_names:
-                        # Allow hyphens and numbers in phase names (e.g., REFACTOR_L1-L4)
-                        if phase_name and re.match(r"^[A-Z0-9_\-]+$", phase_name):
-                            phase_log.append(
-                                {"phase_name": phase_name, "status": status}
-                            )
+    @staticmethod
+    def _parse_key_value_format(section_content: str) -> list[dict]:
+        """Parse Format C: 'Phase PHASE_NAME: status=STATUS, outcome=VALUE, blocked_by=REASON'."""
+        entries = []
+        pattern = r"Phase\s+(\w+):\s+status=(\w+)(?:,\s+outcome=(\w+))?(?:,\s+blocked_by=([^\n,]+))?"
+        matches = re.findall(pattern, section_content)
+        for phase_name, status, outcome, blocked_by in matches:
+            entry = {"phase_name": phase_name, "status": status}
 
-            # Parse Format C: Key-value style
-            # Pattern: "Phase PHASE_NAME: status=STATUS, outcome=VALUE, blocked_by=REASON"
-            format_c_pattern = r"Phase\s+(\w+):\s+status=(\w+)(?:,\s+outcome=(\w+))?(?:,\s+blocked_by=([^\n,]+))?"
-            format_c_matches = re.findall(format_c_pattern, section_content)
-            for phase_name, status, outcome, blocked_by in format_c_matches:
-                entry = {"phase_name": phase_name, "status": status}
+            if outcome and outcome.lower() != "null":
+                entry["outcome"] = outcome
 
-                # Convert "null" string to None
-                if outcome and outcome.lower() != "null":
-                    entry["outcome"] = outcome
+            if blocked_by:
+                blocked_by = blocked_by.strip()
+                if not blocked_by.lower().startswith("null"):
+                    entry["blocked_by"] = blocked_by
 
-                # Convert "null" string to None for blocked_by
-                # Handle cases like "null", "null (INVALID)", etc.
-                if blocked_by:
-                    blocked_by = blocked_by.strip()
-                    # If blocked_by starts with "null" (case-insensitive), treat as missing
-                    if not blocked_by.lower().startswith("null"):
-                        entry["blocked_by"] = blocked_by
-                    # If blocked_by starts with "null", don't add it to entry (treat as missing)
+            entries.append(entry)
+        return entries
 
-                phase_log.append(entry)
-
-        # Remove duplicates while preserving order (by checking phase_name+status combination)
+    @staticmethod
+    def _deduplicate_phase_log(phase_log: list[dict]) -> list[dict]:
+        """Remove duplicate entries by (phase_name, status) key, preserving order."""
         seen = set()
-        unique_phase_log = []
+        unique_entries = []
         for entry in phase_log:
-            # Create hashable key from phase_name and status
             key = (entry.get("phase_name"), entry.get("status"))
             if key not in seen:
                 seen.add(key)
-                unique_phase_log.append(entry)
-
-        return unique_phase_log
+                unique_entries.append(entry)
+        return unique_entries

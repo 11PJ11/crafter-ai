@@ -307,87 +307,106 @@ class DESOrchestrator:
         """
         result = self._validator.validate_prompt(prompt)
 
-        # Extract feature_name from DES-PROJECT-ID marker (Schema v2.0)
-        feature_name = None
-        project_match = re.search(r"<!-- DES-PROJECT-ID:\s*(.*?)\s*-->", prompt)
-        if project_match:
-            feature_name = project_match.group(1)
+        feature_name = self._extract_feature_name(prompt)
+        step_id = self._extract_step_id(prompt)
+        agent_name = self._extract_agent_name(prompt)
 
-        # Extract step_id from DES-STEP-ID marker (Schema v2.0)
-        step_id = None
-        step_id_match = re.search(r"<!-- DES-STEP-ID:\s*(.*?)\s*-->", prompt)
-        if step_id_match:
-            step_id = step_id_match.group(1)
-
-        # Fallback: extract from DES-STEP-FILE marker for backward compatibility
-        if not step_id:
-            step_match = re.search(r"<!-- DES-STEP-FILE:\s*(.*?)\s*-->", prompt)
-            if step_match:
-                # Extract step_id from path (e.g., "steps/01-01.json" -> "01-01")
-                import os
-
-                step_path = step_match.group(1)
-                step_id = os.path.splitext(os.path.basename(step_path))[0]
-
-        # Extract agent_name from prompt
-        agent_name = None
-        agent_match = re.search(r"@([\w-]+)\s+agent", prompt)
-        if agent_match:
-            agent_name = agent_match.group(1)
-
-        # Get timestamp from TimeProvider
-        timestamp = self._time_provider.now_utc().isoformat()
-
-        # Create audit event based on validation result
-        if result.task_invocation_allowed:
-            # HOOK_PRE_TASK_PASSED event
-            event = AuditEvent(
-                timestamp=timestamp,
-                event=EventType.HOOK_PRE_TASK_PASSED.value,
-                feature_name=feature_name,
-                step_id=step_id,
-                extra_context={"agent": agent_name} if agent_name else None,
-            )
-        else:
-            # HOOK_PRE_TASK_BLOCKED event
-            rejection_reason = (
-                str(result.errors) if result.errors else "Validation failed"
-            )
-            event = AuditEvent(
-                timestamp=timestamp,
-                event=EventType.HOOK_PRE_TASK_BLOCKED.value,
-                feature_name=feature_name,
-                step_id=step_id,
-                rejection_reason=rejection_reason,
-                extra_context={"agent": agent_name} if agent_name else None,
-            )
-
-        # Log the audit event if audit logging is enabled
-        from des.adapters.driven.config.des_config import DESConfig
-
-        config = DESConfig()
-        if config.audit_logging_enabled:
-            writer = JsonlAuditLogWriter()
-            # Build data dict excluding fields promoted to direct PortAuditEvent fields
-            excluded_keys = ("event", "timestamp", "feature_name", "step_id")
-            data = {
-                k: v
-                for k, v in event.to_dict().items()
-                if k not in excluded_keys and v is not None
-            }
-            writer.log_event(
-                PortAuditEvent(
-                    event_type=event.event,
-                    timestamp=event.timestamp,
-                    feature_name=feature_name,
-                    step_id=step_id,
-                    data=data,
-                )
-            )
+        event = self._build_validation_audit_event(
+            result, feature_name, step_id, agent_name
+        )
+        self._log_audit_event_if_enabled(event, feature_name, step_id)
 
         # Mark lifecycle as completed after validation
         self._subagent_lifecycle_completed = True
         return result
+
+    def _extract_feature_name(self, prompt: str) -> str | None:
+        """Extract feature_name from DES-PROJECT-ID marker."""
+        project_match = re.search(r"<!-- DES-PROJECT-ID:\s*(.*?)\s*-->", prompt)
+        return project_match.group(1) if project_match else None
+
+    def _extract_step_id(self, prompt: str) -> str | None:
+        """Extract step_id from DES-STEP-ID or DES-STEP-FILE marker."""
+        step_id_match = re.search(r"<!-- DES-STEP-ID:\s*(.*?)\s*-->", prompt)
+        if step_id_match:
+            return step_id_match.group(1)
+
+        # Fallback: extract from DES-STEP-FILE marker for backward compatibility
+        step_match = re.search(r"<!-- DES-STEP-FILE:\s*(.*?)\s*-->", prompt)
+        if step_match:
+            import os
+
+            step_path = step_match.group(1)
+            return os.path.splitext(os.path.basename(step_path))[0]
+
+        return None
+
+    def _extract_agent_name(self, prompt: str) -> str | None:
+        """Extract agent name from @agent-name pattern in prompt."""
+        agent_match = re.search(r"@([\w-]+)\s+agent", prompt)
+        return agent_match.group(1) if agent_match else None
+
+    def _build_validation_audit_event(
+        self,
+        result: ValidationResult,
+        feature_name: str | None,
+        step_id: str | None,
+        agent_name: str | None,
+    ) -> AuditEvent:
+        """Build audit event for validation result (passed or blocked)."""
+        timestamp = self._time_provider.now_utc().isoformat()
+        extra_context = {"agent": agent_name} if agent_name else None
+
+        if result.task_invocation_allowed:
+            return AuditEvent(
+                timestamp=timestamp,
+                event=EventType.HOOK_PRE_TASK_PASSED.value,
+                feature_name=feature_name,
+                step_id=step_id,
+                extra_context=extra_context,
+            )
+
+        rejection_reason = (
+            str(result.errors) if result.errors else "Validation failed"
+        )
+        return AuditEvent(
+            timestamp=timestamp,
+            event=EventType.HOOK_PRE_TASK_BLOCKED.value,
+            feature_name=feature_name,
+            step_id=step_id,
+            rejection_reason=rejection_reason,
+            extra_context=extra_context,
+        )
+
+    def _log_audit_event_if_enabled(
+        self,
+        event: AuditEvent,
+        feature_name: str | None,
+        step_id: str | None,
+    ) -> None:
+        """Log audit event if audit logging is enabled in config."""
+        from des.adapters.driven.config.des_config import DESConfig
+
+        config = DESConfig()
+        if not config.audit_logging_enabled:
+            return
+
+        writer = JsonlAuditLogWriter()
+        excluded_keys = ("event", "timestamp", "feature_name", "step_id")
+        data = {
+            k: v
+            for k, v in event.to_dict().items()
+            if k not in excluded_keys and v is not None
+        }
+        writer.log_event(
+            PortAuditEvent(
+                event_type=event.event,
+                timestamp=event.timestamp,
+                feature_name=feature_name,
+                step_id=step_id,
+                data=data,
+            )
+        )
 
     # ========================================================================
     # Validation
@@ -771,6 +790,95 @@ class DESOrchestrator:
                 f"Elapsed time: {elapsed_minutes}m"
             )
 
+    def _check_timeout_thresholds_for_iteration(
+        self,
+        iteration_index: int,
+        phase_name: str,
+        step_data: dict,
+        timeout_thresholds: list[int] | None,
+        mocked_elapsed_times: list[int] | None,
+        timeout_monitor: TimeoutMonitor | None,
+        warnings: list[str],
+        features_validated: list[str],
+    ) -> None:
+        """Check timeout thresholds for a single iteration, appending warnings as needed.
+
+        Prioritizes mocked elapsed times (for testing) over the real TimeoutMonitor.
+        """
+        if mocked_elapsed_times and timeout_thresholds:
+            self._check_mocked_thresholds(
+                iteration_index, phase_name, step_data,
+                timeout_thresholds, mocked_elapsed_times,
+                warnings, features_validated,
+            )
+        elif timeout_monitor and timeout_thresholds:
+            self._check_real_thresholds(
+                iteration_index, phase_name, step_data,
+                timeout_thresholds, timeout_monitor,
+                warnings, features_validated,
+            )
+
+    def _check_mocked_thresholds(
+        self,
+        iteration_index: int,
+        phase_name: str,
+        step_data: dict,
+        timeout_thresholds: list[int],
+        mocked_elapsed_times: list[int],
+        warnings: list[str],
+        features_validated: list[str],
+    ) -> None:
+        """Check thresholds using mocked elapsed times (for testing)."""
+        if iteration_index >= len(mocked_elapsed_times):
+            return
+
+        mocked_elapsed_minutes = mocked_elapsed_times[iteration_index] // 60
+        duration_minutes = step_data.get("tdd_cycle", {}).get("duration_minutes")
+
+        for threshold in timeout_thresholds:
+            if mocked_elapsed_minutes >= threshold:
+                warning = self._build_timeout_warning(
+                    phase_name=phase_name,
+                    elapsed_minutes=mocked_elapsed_minutes,
+                    threshold=threshold,
+                    duration_minutes=duration_minutes,
+                )
+                if warning not in warnings:
+                    warnings.append(warning)
+
+        if "timeout_monitoring" not in features_validated:
+            features_validated.append("timeout_monitoring")
+
+    def _check_real_thresholds(
+        self,
+        iteration_index: int,
+        phase_name: str,
+        step_data: dict,
+        timeout_thresholds: list[int],
+        timeout_monitor: TimeoutMonitor,
+        warnings: list[str],
+        features_validated: list[str],
+    ) -> None:
+        """Check thresholds using real TimeoutMonitor (production path)."""
+        if iteration_index % 5 != 0 and iteration_index != 0:
+            return
+
+        crossed = timeout_monitor.check_thresholds(timeout_thresholds)
+        duration_minutes = step_data.get("tdd_cycle", {}).get("duration_minutes")
+
+        for threshold in crossed:
+            warning = self._format_timeout_warning(
+                threshold=threshold,
+                monitor=timeout_monitor,
+                phase_name=phase_name,
+                duration_minutes=duration_minutes,
+            )
+            if warning not in warnings:
+                warnings.append(warning)
+
+        if crossed and "timeout_monitoring" not in features_validated:
+            features_validated.append("timeout_monitoring")
+
     def execute_step(
         self,
         command: str,
@@ -833,49 +941,16 @@ class DESOrchestrator:
             counter.increment_turn(phase_name)
             features_validated.append("turn_counting")
 
-            # Check thresholds - prioritize mocked time if provided (independent of timeout_monitor)
-            if mocked_elapsed_times and timeout_thresholds:
-                # Use mocked elapsed time for testing
-                if i < len(mocked_elapsed_times):
-                    mocked_elapsed = mocked_elapsed_times[i]
-                    mocked_elapsed_minutes = mocked_elapsed // 60
-
-                    # Check which thresholds are crossed by mocked time
-                    for threshold in timeout_thresholds:
-                        if mocked_elapsed_minutes >= threshold:
-                            duration_minutes = step_data.get("tdd_cycle", {}).get(
-                                "duration_minutes"
-                            )
-                            warning = self._build_timeout_warning(
-                                phase_name=phase_name,
-                                elapsed_minutes=mocked_elapsed_minutes,
-                                threshold=threshold,
-                                duration_minutes=duration_minutes,
-                            )
-                            if warning not in warnings:
-                                warnings.append(warning)
-
-                    if "timeout_monitoring" not in features_validated:
-                        features_validated.append("timeout_monitoring")
-            elif timeout_monitor and timeout_thresholds:
-                # Use real TimeoutMonitor only when mocked times NOT provided
-                if i % 5 == 0 or i == 0:
-                    crossed = timeout_monitor.check_thresholds(timeout_thresholds)
-                    duration_minutes = step_data.get("tdd_cycle", {}).get(
-                        "duration_minutes"
-                    )
-                    for threshold in crossed:
-                        warning = self._format_timeout_warning(
-                            threshold=threshold,
-                            monitor=timeout_monitor,
-                            phase_name=phase_name,
-                            duration_minutes=duration_minutes,
-                        )
-                        if warning not in warnings:
-                            warnings.append(warning)
-
-                    if crossed and "timeout_monitoring" not in features_validated:
-                        features_validated.append("timeout_monitoring")
+            self._check_timeout_thresholds_for_iteration(
+                iteration_index=i,
+                phase_name=phase_name,
+                step_data=step_data,
+                timeout_thresholds=timeout_thresholds,
+                mocked_elapsed_times=mocked_elapsed_times,
+                timeout_monitor=timeout_monitor,
+                warnings=warnings,
+                features_validated=features_validated,
+            )
 
         final_turn_count = counter.get_current_turn(phase_name)
         self._persist_turn_count(

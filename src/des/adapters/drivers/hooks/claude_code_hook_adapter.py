@@ -210,6 +210,89 @@ def extract_des_context_from_transcript(transcript_path: str) -> dict | None:
     return None
 
 
+def _resolve_des_context(hook_input: dict) -> tuple[str, str, str] | tuple[None, dict, int]:
+    """Resolve DES context (execution_log_path, project_id, step_id) from hook input.
+
+    Supports two protocols:
+    1. Direct DES format (CLI testing): {"executionLogPath", "projectId", "stepId"}
+    2. Claude Code protocol (live hooks): {"agent_transcript_path", "cwd", ...}
+
+    Returns:
+        On success: (execution_log_path, project_id, step_id)
+        On error/passthrough: (None, response_dict, exit_code)
+    """
+    execution_log_path = hook_input.get("executionLogPath")
+    project_id = hook_input.get("projectId")
+    step_id = hook_input.get("stepId")
+
+    uses_direct_des_protocol = execution_log_path or project_id or step_id
+
+    if uses_direct_des_protocol:
+        if not (execution_log_path and project_id and step_id):
+            return None, {
+                "status": "error",
+                "reason": "Missing required fields: executionLogPath, projectId, and stepId are all required",
+            }, 1
+        if not Path(execution_log_path).is_absolute():
+            return None, {
+                "status": "error",
+                "reason": f"executionLogPath must be absolute (got: {execution_log_path})",
+            }, 1
+        return execution_log_path, project_id, step_id
+
+    # Claude Code protocol - extract DES context from transcript
+    agent_transcript_path = hook_input.get("agent_transcript_path")
+    cwd = hook_input.get("cwd", "")
+
+    des_context = None
+    if agent_transcript_path:
+        des_context = extract_des_context_from_transcript(agent_transcript_path)
+
+    if des_context is None:
+        return None, {"decision": "allow"}, 0
+
+    project_id = des_context["project_id"]
+    step_id = des_context["step_id"]
+    execution_log_path = os.path.join(
+        cwd, "docs", "feature", project_id, "execution-log.yaml"
+    )
+    return execution_log_path, project_id, step_id
+
+
+def _build_block_notification(
+    project_id: str, step_id: str, execution_log_path: str, decision
+) -> dict:
+    """Build protocol response for a blocked subagent stop decision."""
+    reason = decision.reason or "Validation failed"
+
+    recovery_suggestions = decision.recovery_suggestions or []
+    recovery_steps = "\n".join(
+        [f"  {i + 1}. {s}" for i, s in enumerate(recovery_suggestions)]
+    )
+
+    notification = f"""STOP HOOK VALIDATION FAILED
+
+Step: {project_id}/{step_id}
+Execution Log: {execution_log_path}
+Status: FAILED
+Error: {reason}
+
+RECOVERY REQUIRED:
+{recovery_steps}
+
+The step validation failed. You MUST fix these issues before proceeding."""
+
+    return {
+        "decision": "block",
+        "reason": notification,
+        "hookSpecificOutput": {
+            "hookEventName": "SubagentStop",
+            "additionalContext": notification,
+        },
+        "systemMessage": f"DES STEP INCOMPLETE [{project_id}/{step_id}]: {reason}",
+    }
+
+
 def handle_subagent_stop() -> int:
     """Handle subagent-stop command: validate step completion.
 
@@ -225,7 +308,6 @@ def handle_subagent_stop() -> int:
         2 if gate fails (BLOCKS orchestrator)
     """
     try:
-        # Read JSON from stdin
         input_data = sys.stdin.read()
 
         if not input_data or not input_data.strip():
@@ -233,7 +315,6 @@ def handle_subagent_stop() -> int:
             print(json.dumps(response))
             return 1
 
-        # Parse JSON
         try:
             hook_input = json.loads(input_data)
         except json.JSONDecodeError as e:
@@ -241,62 +322,19 @@ def handle_subagent_stop() -> int:
             print(json.dumps(response))
             return 1
 
-        # Support two protocols:
-        # 1. Direct DES format (CLI testing): {"executionLogPath", "projectId", "stepId"}
-        # 2. Claude Code protocol (live hooks): {"agent_transcript_path", "cwd", ...}
-        execution_log_path = hook_input.get("executionLogPath")
-        project_id = hook_input.get("projectId")
-        step_id = hook_input.get("stepId")
-
-        # Detect which protocol: if any direct DES field present, use direct format
-        uses_direct_des_protocol = execution_log_path or project_id or step_id
-
-        if uses_direct_des_protocol:
-            # Direct DES format - all three fields required
-            if not (execution_log_path and project_id and step_id):
-                response = {
-                    "status": "error",
-                    "reason": "Missing required fields: executionLogPath, projectId, and stepId are all required",
-                }
-                print(json.dumps(response))
-                return 1
-            # Validate absolute path
-            if not Path(execution_log_path).is_absolute():
-                response = {
-                    "status": "error",
-                    "reason": f"executionLogPath must be absolute (got: {execution_log_path})",
-                }
-                print(json.dumps(response))
-                return 1
-        else:
-            # Claude Code protocol - extract DES context from transcript
-            agent_transcript_path = hook_input.get("agent_transcript_path")
-            cwd = hook_input.get("cwd", "")
-
-            des_context = None
-            if agent_transcript_path:
-                des_context = extract_des_context_from_transcript(agent_transcript_path)
-
-            # Non-DES agent: allow passthrough
-            if des_context is None:
-                response = {"decision": "allow"}
-                print(json.dumps(response))
-                return 0
-
-            project_id = des_context["project_id"]
-            step_id = des_context["step_id"]
-
-            # Derive execution-log path from cwd + project convention
-            execution_log_path = os.path.join(
-                cwd, "docs", "feature", project_id, "execution-log.yaml"
-            )
-
-        # Extract stop_hook_active flag (true on second SubagentStop attempt)
-        stop_hook_active = bool(hook_input.get("stop_hook_active", False))
+        # Resolve DES context from either protocol
+        result = _resolve_des_context(hook_input)
+        if result[0] is None:
+            # Error or non-DES passthrough
+            _, response, exit_code = result
+            print(json.dumps(response))
+            return exit_code
+        execution_log_path, project_id, step_id = result
 
         # Delegate to application service
         from des.ports.driver_ports.subagent_stop_port import SubagentStopContext
 
+        stop_hook_active = bool(hook_input.get("stop_hook_active", False))
         service = create_subagent_stop_service()
         decision = service.validate(
             SubagentStopContext(
@@ -309,45 +347,15 @@ def handle_subagent_stop() -> int:
 
         # Translate HookDecision to protocol response
         if decision.action == "allow":
-            response = {"decision": "allow"}
-            print(json.dumps(response))
+            print(json.dumps({"decision": "allow"}))
             return 0
-        else:
-            reason = decision.reason or "Validation failed"
 
-            # Build recovery steps for notification
-            recovery_suggestions = decision.recovery_suggestions or []
-            recovery_steps = "\n".join(
-                [f"  {i + 1}. {s}" for i, s in enumerate(recovery_suggestions)]
-            )
-
-            notification = f"""STOP HOOK VALIDATION FAILED
-
-Step: {project_id}/{step_id}
-Execution Log: {execution_log_path}
-Status: FAILED
-Error: {reason}
-
-RECOVERY REQUIRED:
-{recovery_steps}
-
-The step validation failed. You MUST fix these issues before proceeding."""
-
-            # EXPERIMENT: Test if systemMessage reaches parent conversation
-            # decision:block forces subagent to continue (may not help if out of turns)
-            # Try allow + systemMessage to notify the orchestrator instead
-            response = {
-                "decision": "block",
-                "reason": notification,
-                "hookSpecificOutput": {
-                    "hookEventName": "SubagentStop",
-                    "additionalContext": notification,
-                },
-                "systemMessage": f"DES STEP INCOMPLETE [{project_id}/{step_id}]: {reason}",
-            }
-            print(json.dumps(response))
-            # Exit 0 so Claude Code processes the JSON (exit 2 ignores stdout)
-            return 0
+        response = _build_block_notification(
+            project_id, step_id, execution_log_path, decision
+        )
+        print(json.dumps(response))
+        # Exit 0 so Claude Code processes the JSON (exit 2 ignores stdout)
+        return 0
 
     except Exception as e:
         # Fail-closed: any error blocks execution via stderr + exit 1
