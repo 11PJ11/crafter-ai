@@ -745,7 +745,6 @@ jobs:
           prerelease: ${{ contains(github.ref, '-beta') || contains(github.ref, '-rc') || contains(github.ref, '-alpha') }}
           files: |
             dist/releases/*.tar.gz
-            dist/releases/*.py
             dist/releases/SHA256SUMS.txt
           fail_on_unmatched_files: true
         env:
