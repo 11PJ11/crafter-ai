@@ -245,6 +245,7 @@ commit_parser = "conventional"
 tag_format = "v{version}"
 major_on_zero = false
 build_command = ""
+commit_message = "chore(release): v{version}"
 
 [tool.semantic_release.branches.main]
 match = "master"

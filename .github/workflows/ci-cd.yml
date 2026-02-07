@@ -82,6 +82,13 @@ jobs:
 
       - name: ✅ Validate commit messages
         run: |
+          # Skip commitlint on tag pushes - those commits were already validated
+          # on the master push that triggered python-semantic-release
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "::notice::⏭️ Skipping commitlint for tag push (already validated on master)"
+            exit 0
+          fi
+
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             gitlint --commits "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
           elif [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
@@ -484,6 +491,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_DEFAULT }}
+
+      - name: 🔧 Configure git identity for PSR commits
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: 📦 Install python-semantic-release
         run: pip install python-semantic-release

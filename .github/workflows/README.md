@@ -112,6 +112,7 @@ Four parallel jobs on `ubuntu-latest`, no dependencies. Gate for everything down
 
 Validates conventional commits using `gitlint`.
 
+- **Tag push**: skipped entirely (commits already validated on the master push that triggered PSR)
 - **PR**: validates the full PR commit range (`base..head`)
 - **Push**: validates the pushed commit range (`before..after`)
 - **Force push / new branch**: falls back to validating HEAD only, with a warning annotation
@@ -198,6 +199,7 @@ If no version-bumping commits exist, PSR exits 0 silently and no tag is created.
 
 | Step | Description |
 |------|-------------|
+| Configure git identity | Sets `github-actions[bot]` as commit author (valid email for gitlint M1 rule) |
 | Install PSR | `pip install python-semantic-release` |
 | Calculate version and create tag | `semantic-release version` (handles bump, commit, tag, push) |
 | Version Summary | Displays latest tag in GitHub Step Summary |
