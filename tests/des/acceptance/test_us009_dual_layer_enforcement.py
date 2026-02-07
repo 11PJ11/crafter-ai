@@ -21,6 +21,7 @@ integration protocol.
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 import yaml
@@ -48,7 +49,7 @@ def invoke_hook(hook_type: str, payload: dict) -> tuple[int, dict]:
 
     proc = subprocess.run(
         [
-            "python3",
+            sys.executable,
             "-m",
             "des.adapters.drivers.hooks.claude_code_hook_adapter",
             hook_type,
@@ -456,7 +457,7 @@ class TestDualLayerEnforcement:
 
         proc = subprocess.run(
             [
-                "python3",
+                sys.executable,
                 "-m",
                 "des.adapters.drivers.hooks.claude_code_hook_adapter",
                 "subagent-stop",

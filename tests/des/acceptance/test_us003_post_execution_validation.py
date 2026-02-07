@@ -24,6 +24,7 @@ integration protocol. Internal classes are implementation details.
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -57,7 +58,7 @@ def invoke_hook(hook_type: str, payload: dict) -> tuple[int, dict]:
 
     proc = subprocess.run(
         [
-            "python3",
+            sys.executable,
             "-m",
             "des.adapters.drivers.hooks.claude_code_hook_adapter",
             hook_type,

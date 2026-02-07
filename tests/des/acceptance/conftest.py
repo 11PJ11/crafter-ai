@@ -9,6 +9,7 @@ This module provides test fixtures following hexagonal architecture principles:
 
 import json
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -446,7 +447,7 @@ def run_cli_command(
     """
     import os
 
-    cmd = ["python3", str(cli_path), *args]
+    cmd = [sys.executable, str(cli_path), *args]
 
     # Add src/ to PYTHONPATH for subprocess import resolution (des. package)
     env = os.environ.copy()

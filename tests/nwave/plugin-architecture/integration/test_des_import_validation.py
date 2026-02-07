@@ -120,9 +120,10 @@ class TestDESModuleImportValidation:
         """
         lib_python = installed_des_context.claude_dir / "lib" / "python"
 
+        lib_python_str = str(lib_python)
         import_cmd = (
             f"import sys; "
-            f"sys.path.insert(0, '{lib_python}'); "
+            f"sys.path.insert(0, {lib_python_str!r}); "
             f"from des.application import DESOrchestrator; "
             f"print('DES OK')"
         )
@@ -151,9 +152,10 @@ class TestDESModuleImportValidation:
         """
         lib_python = installed_des_context.claude_dir / "lib" / "python"
 
+        lib_python_str = str(lib_python)
         instantiate_cmd = (
             f"import sys; "
-            f"sys.path.insert(0, '{lib_python}'); "
+            f"sys.path.insert(0, {lib_python_str!r}); "
             f"from des.application import DESOrchestrator; "
             f"o = DESOrchestrator.__new__(DESOrchestrator); "
             f"print('Instantiation OK')"
@@ -174,6 +176,10 @@ class TestDESModuleImportValidation:
         assert "Instantiation OK" in result.stdout
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="Unix executable permissions not applicable on Windows",
+)
 class TestDESScriptExecutablePermissions:
     """Integration tests for DES script executable permissions."""
 
@@ -225,7 +231,9 @@ class TestDESScriptExecution:
         env = os.environ.copy()
         existing_path = env.get("PYTHONPATH", "")
         env["PYTHONPATH"] = (
-            f"{lib_python}:{existing_path}" if existing_path else str(lib_python)
+            f"{lib_python}{os.pathsep}{existing_path}"
+            if existing_path
+            else str(lib_python)
         )
         return env
 
