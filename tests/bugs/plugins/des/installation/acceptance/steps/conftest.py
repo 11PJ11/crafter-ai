@@ -21,7 +21,7 @@ from typing import Any
 import pytest
 
 # Helper functions are in helpers.py to avoid circular imports
-from .helpers import count_des_hooks, is_des_hook, scan_for_bad_imports  # noqa: F401
+from .helpers import count_des_hooks, is_des_hook, is_des_hook_entry, scan_for_bad_imports  # noqa: F401
 
 
 # Step definitions are auto-discovered by pytest-bdd from this package
@@ -105,11 +105,11 @@ def test_logger() -> logging.Logger:
 @pytest.fixture
 def clean_settings_file(temp_claude_dir: Path) -> Path:
     """
-    Create a clean settings.local.json with no hooks.
+    Create a clean settings.json with no hooks.
 
     Used for testing hook installation from scratch.
     """
-    settings_file = temp_claude_dir / "settings.local.json"
+    settings_file = temp_claude_dir / "settings.json"
     settings_file.write_text(json.dumps({"permissions": {"allow": []}}, indent=2))
     return settings_file
 
@@ -117,15 +117,15 @@ def clean_settings_file(temp_claude_dir: Path) -> Path:
 @pytest.fixture
 def settings_with_duplicates(temp_claude_dir: Path) -> Path:
     """
-    Create settings.local.json with duplicate DES hooks.
+    Create settings.json with duplicate DES hooks in nested format.
 
     Simulates the bug state where multiple installs created duplicates.
     Includes a non-DES hook to verify preservation during uninstall.
     """
-    settings_file = temp_claude_dir / "settings.local.json"
+    settings_file = temp_claude_dir / "settings.json"
     lib_path = temp_claude_dir / "lib" / "python"
 
-    # Create hook command matching the real format
+    # Create hook command matching the real nested format
     hook_command_pretask = (
         f"PYTHONPATH={lib_path} python3 -m "
         f"des.adapters.drivers.hooks.claude_code_hook_adapter pre-task"
@@ -139,14 +139,14 @@ def settings_with_duplicates(temp_claude_dir: Path) -> Path:
         "permissions": {"allow": []},
         "hooks": {
             "PreToolUse": [
-                {"matcher": "Task", "command": hook_command_pretask},
-                {"matcher": "Task", "command": hook_command_pretask},  # DUPLICATE
+                {"matcher": "Task", "hooks": [{"type": "command", "command": hook_command_pretask}]},
+                {"matcher": "Task", "hooks": [{"type": "command", "command": hook_command_pretask}]},  # DUPLICATE
                 # Non-DES hook that should be preserved during uninstall
                 {"matcher": "Write", "command": "custom-write-validator.py"},
             ],
             "SubagentStop": [
-                {"command": hook_command_stop},
-                {"command": hook_command_stop},  # DUPLICATE
+                {"hooks": [{"type": "command", "command": hook_command_stop}]},
+                {"hooks": [{"type": "command", "command": hook_command_stop}]},  # DUPLICATE
             ],
         },
     }
@@ -157,11 +157,11 @@ def settings_with_duplicates(temp_claude_dir: Path) -> Path:
 @pytest.fixture
 def settings_with_mixed_hooks(temp_claude_dir: Path) -> Path:
     """
-    Create settings.local.json with DES hooks and non-DES hooks.
+    Create settings.json with DES hooks and non-DES hooks.
 
     Used for testing that non-DES hooks are preserved during uninstall.
     """
-    settings_file = temp_claude_dir / "settings.local.json"
+    settings_file = temp_claude_dir / "settings.json"
     lib_path = temp_claude_dir / "lib" / "python"
 
     hook_command_pretask = (
@@ -177,12 +177,12 @@ def settings_with_mixed_hooks(temp_claude_dir: Path) -> Path:
         "permissions": {"allow": []},
         "hooks": {
             "PreToolUse": [
-                {"matcher": "Task", "command": hook_command_pretask},
+                {"matcher": "Task", "hooks": [{"type": "command", "command": hook_command_pretask}]},
                 # Non-DES hook that should be preserved
                 {"matcher": "Write", "command": "custom-write-validator.py"},
             ],
             "SubagentStop": [
-                {"command": hook_command_stop},
+                {"hooks": [{"type": "command", "command": hook_command_stop}]},
             ],
         },
     }
@@ -193,14 +193,14 @@ def settings_with_mixed_hooks(temp_claude_dir: Path) -> Path:
 @pytest.fixture
 def settings_with_old_format_hook(temp_claude_dir: Path) -> Path:
     """
-    Create settings.local.json with old-format DES hook command.
+    Create settings.json with old-format DES hook command.
 
-    Old format: python3 src/des/.../claude_code_hook_adapter.py
-    New format: python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter
+    Old format: python3 src/des/.../claude_code_hook_adapter.py (flat)
+    New format: python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter (nested)
     """
-    settings_file = temp_claude_dir / "settings.local.json"
+    settings_file = temp_claude_dir / "settings.json"
 
-    # Old format command (contains claude_code_hook_adapter but different path)
+    # Old format command (flat, contains claude_code_hook_adapter but different path)
     old_command = (
         "python3 src/des/adapters/drivers/hooks/claude_code_hook_adapter.py pre-task"
     )
