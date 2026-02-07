@@ -244,13 +244,15 @@ version_variables = [
 commit_parser = "conventional"
 tag_format = "v{version}"
 major_on_zero = false
-build_command = false
+build_command = ""
 
 [tool.semantic_release.branches.main]
 match = "master"
 prerelease = false
 
 [tool.semantic_release.changelog]
+
+[tool.semantic_release.changelog.default_templates]
 changelog_file = "CHANGELOG.md"
 exclude_commit_patterns = [
     "^chore",
