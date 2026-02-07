@@ -90,7 +90,7 @@ flowchart TD
 
 **Concurrency**: grouped by `workflow + ref`. In-progress runs are cancelled when a new push arrives on the same ref.
 
-**Automatic release flow**: When commits are pushed (or a PR is merged) to `master`, Stages 1-4 run as usual. Stage 5 then calculates the next semantic version from conventional commits since the last tag and creates a `v*` tag. That tag push triggers a second pipeline run where Stages 6-7 build and publish the release. No manual tagging is needed.
+**Automatic release flow**: When commits are pushed (or a PR is merged) to `master`, Stages 1-4 run as usual. Stage 5 then calculates the next semantic version from conventional commits since the last tag and creates a `v*` tag. That tag push triggers a second pipeline run where Stages 6-7 build and publish the release. No manual tagging is needed. PSR's version bump commit includes `[skip ci]` in the body to prevent a duplicate master pipeline; only the tag-triggered pipeline runs.
 
 ## Environment
 
@@ -199,12 +199,14 @@ If no version-bumping commits exist, PSR exits 0 silently and no tag is created.
 
 | Step | Description |
 |------|-------------|
-| Configure git identity | Sets `github-actions[bot]` as commit author (valid email for gitlint M1 rule) |
 | Install PSR | `pip install python-semantic-release` |
 | Calculate version and create tag | `semantic-release version` (handles bump, commit, tag, push) |
 | Version Summary | Displays latest tag in GitHub Step Summary |
 
-**Configuration**: `pyproject.toml` under `[tool.semantic_release]`. The `GH_TOKEN` secret (a PAT with `contents: write`) is required because PSR pushes commits and tags, and the default `GITHUB_TOKEN` cannot trigger subsequent workflow runs.
+**Configuration**: `pyproject.toml` under `[tool.semantic_release]`. Key settings:
+- `commit_author`: uses `github-actions[bot]` identity (valid email for gitlint M1 rule)
+- `commit_message`: uses `chore(release): v{version}` with `[skip ci]` in body to prevent duplicate master pipeline
+- `GH_TOKEN` secret (PAT with `contents: write`): required because PSR pushes commits and tags, and the default `GITHUB_TOKEN` cannot trigger subsequent workflow runs
 
 **Version bump rules** (same as before, enforced by PSR's conventional commit parser):
 

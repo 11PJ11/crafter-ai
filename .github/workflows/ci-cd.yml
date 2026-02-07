@@ -492,11 +492,6 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_DEFAULT }}
 
-      - name: 🔧 Configure git identity for PSR commits
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
       - name: 📦 Install python-semantic-release
         run: pip install python-semantic-release
 
