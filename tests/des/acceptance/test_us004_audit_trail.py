@@ -31,7 +31,7 @@ DEVELOP WAVE MAPPING:
 - Scenario 003b: Implement PHASE_* event logging
 - Scenario 003c: Implement SUBAGENT_STOP_* and COMMIT_* event logging
 - Scenario 004: Implement rejection event logging
-- Scenario 005: Implement entry context (step_path, phase_name, status, outcome)
+- Scenario 005: Implement entry context (feature_name, step_id, phase_name, status, outcome)
 - Scenario 006: Implement crash recovery audit (abandoned phase tracing)
 - Scenario 007: Implement JSONL format output
 - Scenario 008: Implement daily rotation with date naming
@@ -63,13 +63,14 @@ class TestAuditTrailForComplianceVerification:
         ISO 8601 Format Required: YYYY-MM-DDTHH:MM:SS.sssZ (e.g., 2026-01-22T14:30:45.123Z)
         """
         # Arrange: DES processes step with phase transitions
-        # step_file = "steps/01-01.json"
+        # feature_name = "audit-log-refactor"
+        # step_id = "01-01"
 
         # Act: Execute step through multiple phases
-        # des_executor.execute_step(step_file)
+        # des_executor.execute_step(feature_name=feature_name, step_id=step_id)
 
         # Assert: Audit log contains timestamped entries
-        # audit_entries = audit_log.read_entries_for_step(step_file)
+        # audit_entries = audit_log.read_entries_for_step(feature_name=feature_name, step_id=step_id)
         # assert len(audit_entries) >= 3  # At minimum: start, phase transition, end
 
         # Verify ISO 8601 timestamp format
@@ -140,7 +141,7 @@ class TestAuditTrailForComplianceVerification:
     @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_003a_task_invocation_events_captured(self):
         """
-        GIVEN Marcus runs /nw:execute @software-crafter "steps/01-01.json"
+        GIVEN Marcus runs /nw:execute @software-crafter for feature audit-log-refactor step 01-01
         WHEN task invocation begins and passes validation
         THEN audit log contains TASK_INVOCATION_STARTED and TASK_INVOCATION_VALIDATED
 
@@ -150,14 +151,15 @@ class TestAuditTrailForComplianceVerification:
         DEVELOP STEP MAPPING: Implement TASK_INVOCATION event logging
         """
         # Arrange: Set up step execution
-        # step_file = "steps/01-01.json"
+        # feature_name = "audit-log-refactor"
+        # step_id = "01-01"
         # des_executor = DESExecutor()
 
         # Act: Start task execution (triggers invocation events)
-        # result = des_executor.start_task(step_file)
+        # result = des_executor.start_task(feature_name=feature_name, step_id=step_id)
 
         # Assert: TASK_INVOCATION_* events present
-        # audit_entries = audit_log.read_entries_for_step(step_file)
+        # audit_entries = audit_log.read_entries_for_step(feature_name=feature_name, step_id=step_id)
         # event_types = [entry["event"] for entry in audit_entries]
         # assert "TASK_INVOCATION_STARTED" in event_types, \
         #     "Missing TASK_INVOCATION_STARTED event"
@@ -183,14 +185,15 @@ class TestAuditTrailForComplianceVerification:
         DEVELOP STEP MAPPING: Implement PHASE_* event logging
         """
         # Arrange: Set up step with all phases to execute
-        # step_file = "steps/01-01.json"
+        # feature_name = "audit-log-refactor"
+        # step_id = "01-01"
         # des_executor = DESExecutor()
 
         # Act: Execute through all 14 phases
-        # result = des_executor.execute_all_phases(step_file)
+        # result = des_executor.execute_all_phases(feature_name=feature_name, step_id=step_id)
 
         # Assert: PHASE_* events for all 14 phases
-        # audit_entries = audit_log.read_entries_for_step(step_file)
+        # audit_entries = audit_log.read_entries_for_step(feature_name=feature_name, step_id=step_id)
         # event_types = [entry["event"] for entry in audit_entries]
         # phase_started_count = sum(1 for e in event_types if e == "PHASE_STARTED")
         # phase_completed_count = sum(1 for e in event_types if e == "PHASE_COMPLETED")
@@ -214,14 +217,15 @@ class TestAuditTrailForComplianceVerification:
         DEVELOP STEP MAPPING: Implement SUBAGENT_STOP_* and COMMIT_* event logging
         """
         # Arrange: Set up complete step execution
-        # step_file = "steps/01-01.json"
+        # feature_name = "audit-log-refactor"
+        # step_id = "01-01"
         # des_executor = DESExecutor()
 
         # Act: Execute step fully including commit
-        # result = des_executor.execute_step_fully(step_file)
+        # result = des_executor.execute_step_fully(feature_name=feature_name, step_id=step_id)
 
         # Assert: SUBAGENT_STOP_* events
-        # audit_entries = audit_log.read_entries_for_step(step_file)
+        # audit_entries = audit_log.read_entries_for_step(feature_name=feature_name, step_id=step_id)
         # event_types = [entry["event"] for entry in audit_entries]
         # assert "SUBAGENT_STOP_VALIDATION" in event_types, \
         #     "Missing SUBAGENT_STOP_VALIDATION event"
@@ -268,38 +272,43 @@ class TestAuditTrailForComplianceVerification:
         # assert "timestamp" in rejection_entry
 
     # =========================================================================
-    # AC-004.4: Each entry includes step file path and relevant event data
+    # AC-004.4: Each entry includes feature_name, step_id and relevant event data
     # Scenario 5: Audit entries contain complete context
     # =========================================================================
 
     @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
-    def test_scenario_005_audit_entries_include_step_path_and_event_data(self):
+    def test_scenario_005_audit_entries_include_feature_name_step_id_and_event_data(
+        self,
+    ):
         """
         GIVEN phase transition occurs for step 01-01 during GREEN_UNIT phase
         WHEN audit entry is written
-        THEN entry contains: step_file path, phase name, status, and outcome
+        THEN entry contains: feature_name, step_id, phase name, status, and outcome
 
         Business Value: Priya has complete context in each audit entry,
                        enabling precise traceability without cross-referencing
                        multiple files.
 
-        Required Fields: step_file, event, phase (if applicable), data, timestamp
+        Required Fields: feature_name, step_id, event, phase (if applicable), data, timestamp
         """
         # Arrange: Set up phase execution
-        # step_file = "steps/01-01.json"
+        # feature_name = "audit-log-refactor"
+        # step_id = "01-01"
         # phase_name = "GREEN_UNIT"
         # outcome = "Test passes with minimal implementation"
 
         # Act: Record phase completion
         # audit_log.record_phase_completion(
-        #     step_file=step_file,
+        #     feature_name=feature_name,
+        #     step_id=step_id,
         #     phase=phase_name,
         #     outcome=outcome
         # )
 
         # Assert: Entry contains all required context
         # entry = audit_log.get_last_entry()
-        # assert entry["step_file"] == step_file, "Missing step file path"
+        # assert entry["feature_name"] == feature_name, "Missing feature name"
+        # assert entry["step_id"] == step_id, "Missing step ID"
         # assert entry["event"] == "PHASE_COMPLETED", "Wrong event type"
         # assert entry["phase"] == phase_name, "Missing phase name"
         # assert entry["data"]["outcome"] == outcome, "Missing outcome data"
@@ -324,17 +333,18 @@ class TestAuditTrailForComplianceVerification:
         From User Story Example 3: "Crash Recovery Audit"
         """
         # Arrange: Simulate crash during phase execution
-        # step_file = "steps/01-01.json"
+        # feature_name = "audit-log-refactor"
+        # step_id = "01-01"
         # phase_name = "RED_UNIT"
 
         # Record phase start (simulates agent beginning work)
-        # audit_log.record_phase_start(step_file=step_file, phase=phase_name)
+        # audit_log.record_phase_start(feature_name=feature_name, step_id=step_id, phase=phase_name)
 
         # Simulate crash: SubagentStop fires without phase completion
-        # subagent_hook.fire_on_crash(step_file=step_file)
+        # subagent_hook.fire_on_crash(feature_name=feature_name, step_id=step_id)
 
         # Assert: Audit trail shows incomplete execution
-        # entries = audit_log.read_entries_for_step(step_file)
+        # entries = audit_log.read_entries_for_step(feature_name=feature_name, step_id=step_id)
         # events = [(e["event"], e.get("phase")) for e in entries]
 
         # Phase started but not completed
@@ -372,11 +382,11 @@ class TestAuditTrailForComplianceVerification:
         # Arrange: Create audit log with multiple entries
         # audit_file = "audit/audit-2026-01-22.log"
         # entries = [
-        #     {"event": "TASK_INVOCATION_STARTED", "step_file": "steps/01-01.json",
+        #     {"event": "TASK_INVOCATION_STARTED", "feature_name": "audit-log-refactor", "step_id": "01-01",
         #      "timestamp": "2026-01-22T14:00:00Z"},
-        #     {"event": "PHASE_STARTED", "step_file": "steps/01-01.json",
+        #     {"event": "PHASE_STARTED", "feature_name": "audit-log-refactor", "step_id": "01-01",
         #      "phase": "PREPARE", "timestamp": "2026-01-22T14:00:05Z"},
-        #     {"event": "PHASE_COMPLETED", "step_file": "steps/01-01.json",
+        #     {"event": "PHASE_COMPLETED", "feature_name": "audit-log-refactor", "step_id": "01-01",
         #      "phase": "PREPARE", "data": {"outcome": "Context loaded"},
         #      "timestamp": "2026-01-22T14:01:00Z"},
         # ]
@@ -404,7 +414,8 @@ class TestAuditTrailForComplianceVerification:
         #     # Fields should be descriptive, not cryptic
         #     assert "evt" not in parsed  # Not abbreviated
         #     assert "ts" not in parsed   # Use "timestamp" not "ts"
-        #     assert "sf" not in parsed   # Use "step_file" not "sf"
+        #     assert "fn" not in parsed   # Use "feature_name" not "fn"
+        #     assert "sid" not in parsed  # Use "step_id" not "sid"
 
     # =========================================================================
     # AC-004.6: Audit logs rotate daily (audit-YYYY-MM-DD.log naming convention)
@@ -429,11 +440,11 @@ class TestAuditTrailForComplianceVerification:
 
         # Act: Write entries on different days
         # with freeze_time(date_jan_22):
-        #     audit_log.append({"event": "TASK_INVOCATION_STARTED", "step_file": "steps/01-01.json"})
+        #     audit_log.append({"event": "TASK_INVOCATION_STARTED", "feature_name": "audit-log-refactor", "step_id": "01-01"})
         #     audit_log.append({"event": "PHASE_STARTED", "phase": "PREPARE"})
 
         # with freeze_time(date_jan_23):
-        #     audit_log.append({"event": "TASK_INVOCATION_STARTED", "step_file": "steps/02-01.json"})
+        #     audit_log.append({"event": "TASK_INVOCATION_STARTED", "feature_name": "audit-log-refactor", "step_id": "02-01"})
         #     audit_log.append({"event": "PHASE_STARTED", "phase": "PREPARE"})
 
         # Assert: Separate files with correct naming
@@ -446,9 +457,9 @@ class TestAuditTrailForComplianceVerification:
         # jan_22_entries = audit_log.read_file("audit-2026-01-22.log")
         # jan_23_entries = audit_log.read_file("audit-2026-01-23.log")
 
-        # assert any("01-01.json" in str(e) for e in jan_22_entries)
-        # assert any("02-01.json" in str(e) for e in jan_23_entries)
-        # assert not any("02-01.json" in str(e) for e in jan_22_entries)
+        # assert any(e.get("step_id") == "01-01" for e in jan_22_entries)
+        # assert any(e.get("step_id") == "02-01" for e in jan_23_entries)
+        # assert not any(e.get("step_id") == "02-01" for e in jan_22_entries)
 
     # =========================================================================
     # AC-004.6 (Additional): File per day prevents bloat
@@ -495,10 +506,10 @@ class TestAuditTrailForComplianceVerification:
     @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_010_complete_execution_produces_reviewable_audit_trail(self):
         """
-        GIVEN Marcus runs /nw:execute @software-crafter "steps/01-01.json" on 2026-01-22
+        GIVEN Marcus runs /nw:execute @software-crafter for audit-log-refactor/01-01 on 2026-01-22
         WHEN execution completes successfully through all 14 phases
         THEN Priya can review audit-2026-01-22.log and see:
-             - TASK_INVOCATION_STARTED with step path
+             - TASK_INVOCATION_STARTED with feature_name and step_id
              - TASK_INVOCATION_VALIDATED (pre-check passed)
              - PHASE_STARTED/COMPLETED for each of 14 phases with outcomes
              - SUBAGENT_STOP_VALIDATION (success)
@@ -510,19 +521,20 @@ class TestAuditTrailForComplianceVerification:
         From User Story Domain Example 1: "Complete Execution Audit"
         """
         # Arrange: Set up complete step execution
-        # step_file = "steps/01-01.json"
+        # feature_name = "audit-log-refactor"
+        # step_id = "01-01"
         # execution_date = datetime(2026, 1, 22)
 
         # Act: Execute step fully (all 14 phases)
         # with freeze_time(execution_date):
-        #     result = des_executor.execute_step_fully(step_file)
+        #     result = des_executor.execute_step_fully(feature_name=feature_name, step_id=step_id)
 
         # Assert: Complete audit trail for PR review
         # audit_entries = audit_log.read_file("audit-2026-01-22.log")
 
         # 1. Task invocation events
         # assert any(e["event"] == "TASK_INVOCATION_STARTED" and
-        #            e["step_file"] == step_file for e in audit_entries)
+        #            e["feature_name"] == feature_name and e["step_id"] == step_id for e in audit_entries)
         # assert any(e["event"] == "TASK_INVOCATION_VALIDATED" for e in audit_entries)
 
         # 2. All 14 phases logged with start/complete
