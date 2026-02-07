@@ -8,7 +8,8 @@ contrib = contrib-title-conventional-commits
 
 # Ignore rules that conflict with our workflow
 # B6: Body message is missing - we allow short commits without body
-ignore = B6
+# T5: Title contains "WIP" - redundant with conventional commit regex enforcement
+ignore = B6,T5
 
 # Verbosity
 verbosity = 2
