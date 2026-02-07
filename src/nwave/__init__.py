@@ -1,1 +1,0 @@
-"""nWave framework core module."""
