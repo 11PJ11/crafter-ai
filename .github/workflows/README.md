@@ -1,7 +1,7 @@
-# nWave Framework CI/CD Pipeline v2.0
+# nWave Framework CI/CD Pipeline v2.1
 
-Single-workflow pipeline (`ci-cd.yml`) with 6 sequential stages, cross-platform testing,
-tag-gated releases, and Slack state-machine notifications.
+Single-workflow pipeline (`ci-cd.yml`) with 7 sequential stages, cross-platform testing,
+automatic semantic versioning on master, tag-gated releases, and Slack state-machine notifications.
 
 ## Pipeline Diagram
 
@@ -42,13 +42,18 @@ flowchart TD
         AS["agent-sync<br/>Agent name synchronization"]
     end
 
-    subgraph stage5["Stage 5: Build  ~5 min  tags only"]
-        style stage5 fill:#F3E5F5,stroke:#7B1FA2
+    subgraph stage5["Stage 5: Version Tag  ~1 min  master only"]
+        style stage5 fill:#E0F7FA,stroke:#00838F
+        VT["version-tag<br/>python-semantic-release<br/>version bump + tag + push"]
+    end
+
+    subgraph stage6["Stage 6: Build  ~5 min  tags only"]
+        style stage6 fill:#F3E5F5,stroke:#7B1FA2
         BD["build<br/>Version check, installable bundle,<br/>release packages, SHA256"]
     end
 
-    subgraph stage6["Stage 6: Release  ~2 min  tags only"]
-        style stage6 fill:#F3E5F5,stroke:#7B1FA2
+    subgraph stage7["Stage 7: Release  ~2 min  tags only"]
+        style stage7 fill:#F3E5F5,stroke:#7B1FA2
         RL["release<br/>GitHub Release + conventional<br/>commit changelog + artifacts"]
     end
 
@@ -61,6 +66,8 @@ flowchart TD
     CL & CQ & FQ & SC --> FV
     FV --> stage3
     T_UL11 & T_UL12 & T_WL11 & T_WL12 & T_ML11 & T_ML12 --> AS
+    AS -->|"if master push"| VT
+    VT -.->|"creates v* tag"| T2
     AS -->|"if tag v*"| BD
     BD --> RL
 
@@ -68,6 +75,7 @@ flowchart TD
     FV -.-> NS
     T_UL11 & T_UL12 & T_WL11 & T_WL12 & T_ML11 & T_ML12 -.-> NS
     AS -.-> NS
+    VT -.-> NS
     BD -.-> NS
     RL -.-> NS
 ```
@@ -76,11 +84,13 @@ flowchart TD
 
 | Event | Branches / Patterns | Notes |
 |-------|---------------------|-------|
-| `push` | `master`, `develop`, `installer` | Full pipeline (Stages 1-4) |
-| `push` (tag) | `v*` | Full pipeline + Build + Release (Stages 1-6) |
+| `push` | `master`, `develop`, `installer` | Full pipeline (Stages 1-4); Stage 5 auto-tags on master |
+| `push` (tag) | `v*` | Full pipeline + Build + Release (Stages 1-4, 6-7). Tags are created automatically by Stage 5. |
 | `pull_request` | `master`, `develop` | Full pipeline (Stages 1-4) |
 
 **Concurrency**: grouped by `workflow + ref`. In-progress runs are cancelled when a new push arrives on the same ref.
+
+**Automatic release flow**: When commits are pushed (or a PR is merged) to `master`, Stages 1-4 run as usual. Stage 5 then calculates the next semantic version from conventional commits since the last tag and creates a `v*` tag. That tag push triggers a second pipeline run where Stages 6-7 build and publish the release. No manual tagging is needed.
 
 ## Environment
 
@@ -171,7 +181,40 @@ Single job on `ubuntu-latest`. **Requires**: all Stage 3 matrix jobs pass.
 Runs `scripts/framework/sync_agent_names.py --verify` to confirm agent names are synchronized
 across the framework catalog and source files.
 
-### Stage 5: Build (tags only)
+### Stage 5: Version Tag (master push only)
+
+Single job on `ubuntu-latest`. **Requires**: Stage 4 passes. **Condition**: `refs/heads/master` push only (not PRs, not tags, not other branches).
+
+Uses [python-semantic-release](https://python-semantic-release.readthedocs.io/) (PSR) to automate
+the entire version lifecycle. PSR analyzes conventional commits since the last tag, then:
+
+1. Calculates the next semantic version
+2. Updates `pyproject.toml` and `nWave/framework-catalog.yaml` (configured via `version_toml` and `version_variables`)
+3. Creates a version bump commit
+4. Creates and pushes an annotated `v*` tag
+
+If no version-bumping commits exist, PSR exits 0 silently and no tag is created.
+
+| Step | Description |
+|------|-------------|
+| Install PSR | `pip install python-semantic-release` |
+| Calculate version and create tag | `semantic-release version` (handles bump, commit, tag, push) |
+| Version Summary | Displays latest tag in GitHub Step Summary |
+
+**Configuration**: `pyproject.toml` under `[tool.semantic_release]`. The `GH_TOKEN` secret (a PAT with `contents: write`) is required because PSR pushes commits and tags, and the default `GITHUB_TOKEN` cannot trigger subsequent workflow runs.
+
+**Version bump rules** (same as before, enforced by PSR's conventional commit parser):
+
+| Commit pattern | Bump | Example |
+|---------------|------|---------|
+| `feat!:`, `fix!:`, or `BREAKING CHANGE:` / `BREAKING-CHANGE:` in body | Major | `1.2.3` to `2.0.0` |
+| `feat:` or `feat(scope):` | Minor | `1.2.3` to `1.3.0` |
+| `fix:` or `fix(scope):` | Patch | `1.2.3` to `1.2.4` |
+| `docs:`, `style:`, `ci:`, `chore:`, `test:`, `refactor:` only | None | No tag created, stage exits successfully |
+
+**Note**: `major_on_zero = false` prevents `0.x.y` versions from bumping to `1.0.0` on `feat` commits.
+
+### Stage 6: Build (tags only)
 
 Single job on `ubuntu-latest`. **Requires**: Stage 4 passes. **Condition**: `refs/tags/v*` only.
 
@@ -186,16 +229,16 @@ Creates the GitHub Release artifact: a self-contained installable bundle that us
 | Checksums | SHA256 for all release files |
 | Artifact upload | `release-packages` artifact, 90-day retention |
 
-### Stage 6: Release (tags only)
+### Stage 7: Release (tags only)
 
-Single job on `ubuntu-latest`. **Requires**: Stage 5 passes. **Condition**: `refs/tags/v*` only.
+Single job on `ubuntu-latest`. **Requires**: Stage 6 passes. **Condition**: `refs/tags/v*` only.
 
 Publishes a GitHub Release with downloadable artifacts and a changelog auto-generated from
 conventional commits between the previous tag and the current tag.
 
 | Step | Description |
 |------|-------------|
-| Download artifacts | Fetches `release-packages` from Stage 5 |
+| Download artifacts | Fetches `release-packages` from Stage 6 |
 | Extract version | Strips `v` prefix from tag |
 | Generate changelog | Parses `git log` between previous and current tag, groups by conventional commit type |
 | Create release | `softprops/action-gh-release@v1` with generated changelog body |
@@ -266,27 +309,34 @@ the previous run status, failure timestamp, and failed job names across workflow
 
 ## Release Process
 
-Releases follow semantic versioning driven by conventional commits:
+Releases are **fully automatic** via [python-semantic-release](https://python-semantic-release.readthedocs.io/).
+Every merge to `master` triggers PSR, which handles the entire version lifecycle without manual intervention.
+
+**Flow**:
+
+```
+1. Merge PR (or push) to master
+2. Pipeline runs Stages 1-4 (quality, tests, validation)
+3. Stage 5: PSR analyzes conventional commits since last tag
+4. Stage 5: PSR updates pyproject.toml + framework-catalog.yaml with new version
+5. Stage 5: PSR commits version bump, creates v* tag, pushes both
+6. Tag push triggers a NEW pipeline run
+7. Stage 6 builds release packages (verifies tag matches framework-catalog.yaml)
+8. Stage 7 creates GitHub Release with changelog and build artifacts
+```
+
+**Single source of truth**: `pyproject.toml` holds the canonical version. PSR keeps
+`nWave/framework-catalog.yaml` in sync automatically (configured via `version_variables`).
+You no longer need to manually update version fields before merging.
+
+**Version bump rules**:
 
 | Commit pattern | Version bump |
 |---------------|-------------|
 | `fix:` | Patch (`1.2.3` to `1.2.4`) |
 | `feat:` | Minor (`1.2.3` to `1.3.0`) |
 | `feat!:`, `fix!:`, or `BREAKING CHANGE:` footer | Major (`1.2.3` to `2.0.0`) |
-
-To create a release:
-
-```
-1. Determine the next version from conventional commit history since the last tag
-2. Update framework-catalog.yaml version to match
-3. Tag the commit:  git tag v1.3.0
-4. Push the tag:    git push origin v1.3.0
-```
-
-The pipeline runs Stages 1-4 as usual, then:
-
-- **Stage 5** verifies version consistency (tag vs catalog), builds the installable bundle and release packages, generates SHA256 checksums
-- **Stage 6** auto-generates a changelog grouped by commit type (Breaking Changes, Features, Bug Fixes, Other), creates a GitHub Release, and uploads all artifacts
+| `docs:`, `style:`, `ci:`, `chore:`, `test:`, `refactor:` only | No release (stage exits gracefully) |
 
 Pre-release tags (`v1.2.3-beta.1`, `v1.2.3-rc.1`, `v1.2.3-alpha.1`) are automatically
 marked as pre-release on GitHub.
@@ -295,12 +345,13 @@ marked as pre-release on GitHub.
 
 | Secret | Required | Purpose |
 |--------|----------|---------|
+| `GH_TOKEN` | Yes | PAT with `contents: write` scope. Used by python-semantic-release (Stage 5) for pushing version bump commits and tags. Required because the default `GITHUB_TOKEN` cannot trigger subsequent workflow runs (tag push must trigger Stages 6-7). |
 | `SLACK_WEBHOOK_URL` | Yes | Incoming webhook URL for Slack notifications |
-| `GITHUB_TOKEN` | Auto-provided | Used by `softprops/action-gh-release` for creating releases and uploading assets |
+| `GITHUB_TOKEN` | Auto-provided | Used by `softprops/action-gh-release` (Stage 7) for creating/updating releases |
 
 ## Permissions
 
 The workflow requests:
 
-- `contents: write` (required for creating GitHub Releases)
+- `contents: write` (required for creating tags and GitHub Releases)
 - `pull-requests: read` (required for PR commit range in commitlint)

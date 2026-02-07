@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 """nWave Version Auto-Increment Hook
 
+DEPRECATED: This hook has been replaced by python-semantic-release (PSR).
+PSR now handles version bumping automatically in CI/CD Stage 5 based on
+conventional commit types (feat: = minor, fix: = patch, BREAKING CHANGE: = major).
+Configuration lives in pyproject.toml under [tool.semantic_release].
+
+This file is retained for reference but is no longer active in .pre-commit-config.yaml.
+
+Original description:
 Automatically bumps patch version when nWave files are modified.
 """
 

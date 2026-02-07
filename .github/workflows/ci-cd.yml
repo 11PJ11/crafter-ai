@@ -1,5 +1,5 @@
 # =============================================================================
-# nWave Framework CI/CD Pipeline v2.0
+# nWave Framework CI/CD Pipeline v2.1
 # =============================================================================
 #
 # Architecture: Optimized parallel execution with intelligent grouping
@@ -19,10 +19,14 @@
 # Stage 4 - Agent Validation (~1 min):
 #   - agent-sync: Verify agent name synchronization
 #
-# Stage 5 - Build (tags only, ~5 min):
+# Stage 5 - Version Tag (master push only, ~1 min):
+#   - version-tag: python-semantic-release calculates next semver, updates
+#     pyproject.toml + framework-catalog.yaml, commits, tags, and pushes
+#
+# Stage 6 - Build (tags only, ~5 min):
 #   - build: Create release packages
 #
-# Stage 6 - Release (tags only, ~2 min):
+# Stage 7 - Release (tags only, ~2 min):
 #   - release: Publish to GitHub Releases
 #
 # =============================================================================
@@ -419,7 +423,44 @@ jobs:
         run: pipenv run python3 scripts/framework/sync_agent_names.py --verify
 
   # ===========================================================================
-  # STAGE 5: BUILD - Only on Version Tags
+  # STAGE 5: VERSION TAG - Auto-tag on master push
+  # ===========================================================================
+
+  version-tag:
+    name: "🏷️ Version Tag"
+    needs: [agent-sync]
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_DEFAULT }}
+
+      - name: 📦 Install python-semantic-release
+        run: pip install python-semantic-release
+
+      - name: 🏷️ Calculate version and create tag
+        run: semantic-release version
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: 📊 Version Summary
+        if: success()
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
+          echo "## 🏷️ Semantic Release" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Latest tag**: \`$LATEST_TAG\`" >> $GITHUB_STEP_SUMMARY
+
+  # ===========================================================================
+  # STAGE 6: BUILD - Only on Version Tags
   # ===========================================================================
 
   build:
@@ -487,7 +528,7 @@ jobs:
           retention-days: 90
 
   # ===========================================================================
-  # STAGE 6: RELEASE - Only on Version Tags
+  # STAGE 7: RELEASE - Only on Version Tags
   # ===========================================================================
 
   release:
@@ -675,7 +716,7 @@ jobs:
     if: |
       always() &&
       !cancelled()
-    needs: [commitlint, code-quality, file-quality, security-checks, framework-validation, test, agent-sync, build, release]
+    needs: [commitlint, code-quality, file-quality, security-checks, framework-validation, test, agent-sync, version-tag, build, release]
 
     steps:
       - name: 📥 Checkout (for state tracking script)

@@ -53,7 +53,8 @@ dev = [
     "pytest-bdd>=7.0.0",
     "mypy>=1.8.0",
     "ruff>=0.3.0",
-    "pre-commit>=3.6.0"
+    "pre-commit>=3.6.0",
+    "python-semantic-release>=9.0.0"
 ]
 test = [
     "pytest>=8.0.0",
@@ -234,3 +235,35 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+version_variables = [
+    "nWave/framework-catalog.yaml:version",
+]
+commit_parser = "conventional"
+tag_format = "v{version}"
+major_on_zero = false
+build_command = false
+
+[tool.semantic_release.branches.main]
+match = "master"
+prerelease = false
+
+[tool.semantic_release.changelog]
+changelog_file = "CHANGELOG.md"
+exclude_commit_patterns = [
+    "^chore",
+    "^ci",
+    "^docs",
+    "^style",
+    "^test",
+    "^build",
+]
+
+[tool.semantic_release.remote]
+type = "github"
+token = { env = "GH_TOKEN" }
+
+[tool.semantic_release.publish]
+upload_to_vcs_release = false

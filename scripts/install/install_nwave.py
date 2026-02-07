@@ -67,7 +67,30 @@ EXPECTED_COMMAND_COUNT = 23
 _ANSI_BLUE = "\033[0;34m"
 _ANSI_NC = "\033[0m"  # No Color
 
-__version__ = "1.2.0"
+
+def _get_version() -> str:
+    """Read version from pyproject.toml (single source of truth)."""
+    pyproject_path = Path(__file__).parent.parent.parent / "pyproject.toml"
+    if not pyproject_path.exists():
+        return "0.0.0"
+    try:
+        try:
+            import tomllib
+        except ModuleNotFoundError:
+            import tomli as tomllib  # type: ignore[no-redef]
+        with open(pyproject_path, "rb") as f:
+            data = tomllib.load(f)
+        return data.get("project", {}).get("version", "0.0.0")
+    except ModuleNotFoundError:
+        # Python < 3.11 without tomli; parse version with regex
+        import re
+
+        content = pyproject_path.read_text()
+        m = re.search(r'^version\s*=\s*"([^"]+)"', content, re.MULTILINE)
+        return m.group(1) if m else "0.0.0"
+
+
+__version__ = _get_version()
 
 # ASCII art logo (raw text, no Rich markup)
 _LOGO_ART = [
