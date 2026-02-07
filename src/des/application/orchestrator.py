@@ -19,7 +19,6 @@ Integration: US-003 Post-Execution Validation
 - Validates step file phase execution state
 """
 
-import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -28,11 +27,16 @@ from typing import TYPE_CHECKING, Optional
 from des.adapters.driven.logging.audit_events import AuditEvent, EventType
 from des.adapters.driven.logging.jsonl_audit_log_writer import JsonlAuditLogWriter
 from des.application.stale_execution_detector import StaleExecutionDetector
+from des.domain.des_marker_generator import DESMarkerGenerator
 from des.domain.invocation_limits_validator import (
     InvocationLimitsResult,
     InvocationLimitsValidator,
 )
+from des.domain.prompt_metadata_extractor import PromptMetadataExtractor
+from des.domain.schema_version_detector import SchemaVersionDetector
+from des.domain.step_file_repository import StepFileRepository
 from des.domain.timeout_monitor import TimeoutMonitor
+from des.domain.timeout_warning_builder import TimeoutWarningBuilder
 from des.domain.turn_counter import TurnCounter
 from des.ports.driven_ports.audit_log_writer import (
     AuditEvent as PortAuditEvent,
@@ -212,6 +216,13 @@ class DESOrchestrator:
         self._subagent_lifecycle_completed = False
         self._step_file_path: Path | None = None
 
+        # Initialize extracted domain services
+        self._schema_detector = SchemaVersionDetector(filesystem)
+        self._marker_generator = DESMarkerGenerator()
+        self._metadata_extractor = PromptMetadataExtractor()
+        self._warning_builder = TimeoutWarningBuilder()
+        self._step_repository = StepFileRepository(filesystem)
+
     # ========================================================================
     # Schema Version Detection
     # ========================================================================
@@ -233,16 +244,7 @@ class DESOrchestrator:
             FileNotFoundError: If step file does not exist
             json.JSONDecodeError: If step file is not valid JSON
         """
-        step_data = self._load_step_file(step_file_path)
-
-        # Check multiple possible locations for schema_version
-        schema_version = (
-            step_data.get("schema_version")
-            or step_data.get("tdd_cycle", {}).get("schema_version")
-            or "1.0"  # Default to v1.0 if not found (14-phase legacy)
-        )
-
-        return schema_version
+        return self._schema_detector.detect_version(step_file_path)
 
     def get_phase_count_for_schema(self, schema_version: str) -> int:
         """
@@ -254,10 +256,7 @@ class DESOrchestrator:
         Returns:
             Expected number of phases (14 for v1.0, 8 for v2.0)
         """
-        if schema_version == "2.0":
-            return 8
-        else:
-            return 14  # Default to 14 for v1.0 and unknown versions
+        return self._schema_detector.get_phase_count(schema_version)
 
     # ========================================================================
     # Factory Methods
@@ -322,29 +321,15 @@ class DESOrchestrator:
 
     def _extract_feature_name(self, prompt: str) -> str | None:
         """Extract feature_name from DES-PROJECT-ID marker."""
-        project_match = re.search(r"<!-- DES-PROJECT-ID:\s*(.*?)\s*-->", prompt)
-        return project_match.group(1) if project_match else None
+        return self._metadata_extractor.extract_feature_name(prompt)
 
     def _extract_step_id(self, prompt: str) -> str | None:
         """Extract step_id from DES-STEP-ID or DES-STEP-FILE marker."""
-        step_id_match = re.search(r"<!-- DES-STEP-ID:\s*(.*?)\s*-->", prompt)
-        if step_id_match:
-            return step_id_match.group(1)
-
-        # Fallback: extract from DES-STEP-FILE marker for backward compatibility
-        step_match = re.search(r"<!-- DES-STEP-FILE:\s*(.*?)\s*-->", prompt)
-        if step_match:
-            import os
-
-            step_path = step_match.group(1)
-            return os.path.splitext(os.path.basename(step_path))[0]
-
-        return None
+        return self._metadata_extractor.extract_step_id(prompt)
 
     def _extract_agent_name(self, prompt: str) -> str | None:
         """Extract agent name from @agent-name pattern in prompt."""
-        agent_match = re.search(r"@([\w-]+)\s+agent", prompt)
-        return agent_match.group(1) if agent_match else None
+        return self._metadata_extractor.extract_agent_name(prompt)
 
     def _build_validation_audit_event(
         self,
@@ -478,12 +463,7 @@ class DESOrchestrator:
         if not step_file:
             raise ValueError("Step file cannot be None or empty")
 
-        markers = [
-            "<!-- DES-VALIDATION: required -->",
-            f"<!-- DES-STEP-FILE: {step_file} -->",
-            f"<!-- DES-ORIGIN: command:{command} -->",
-        ]
-        return "\n".join(markers)
+        return self._marker_generator.generate_markers(command, step_file)
 
     def render_prompt(
         self,
@@ -775,20 +755,9 @@ class DESOrchestrator:
         Returns:
             Formatted warning string with percentage and remaining time if duration provided
         """
-        if duration_minutes:
-            percentage = int((elapsed_minutes / duration_minutes) * 100)
-            remaining = duration_minutes - elapsed_minutes
-            return (
-                f"TIMEOUT WARNING: Phase {phase_name} "
-                f"{percentage}% elapsed ({elapsed_minutes}/{duration_minutes} minutes). "
-                f"Remaining: {remaining} minutes."
-            )
-        else:
-            return (
-                f"TIMEOUT WARNING: Phase has been running for {elapsed_minutes} minutes "
-                f"(crossed {threshold}-minute threshold). "
-                f"Elapsed time: {elapsed_minutes}m"
-            )
+        return self._warning_builder.build_warning(
+            phase_name, elapsed_minutes, threshold, duration_minutes
+        )
 
     def _check_timeout_thresholds_for_iteration(
         self,
@@ -976,23 +945,15 @@ class DESOrchestrator:
 
     def _resolve_step_file_path(self, project_root: Path | str, step_file: str) -> Path:
         """Convert project_root and step_file to absolute path."""
-        if isinstance(project_root, str):
-            project_root = Path(project_root)
-        return project_root / step_file
+        return self._step_repository.resolve_path(project_root, step_file)
 
     def _load_step_file(self, step_file_path: Path) -> dict:
         """Load and parse step file JSON using injected filesystem."""
-        return self._filesystem.read_json(step_file_path)
+        return self._step_repository.load(step_file_path)
 
     def _get_current_phase(self, step_data: dict) -> dict:
         """Get current phase from step data and mark as IN_PROGRESS if needed."""
-        phase_log = step_data["tdd_cycle"]["phase_execution_log"]
-        current_phase = phase_log[0]  # For now, use first phase
-
-        if current_phase["status"] == "NOT_EXECUTED":
-            current_phase["status"] = "IN_PROGRESS"
-
-        return current_phase
+        return self._step_repository.get_current_phase(step_data)
 
     # ========================================================================
     # TurnCounter Operations
@@ -1059,7 +1020,7 @@ class DESOrchestrator:
             step_file_path: Path to step file
             step_data: Complete step data dictionary to persist
         """
-        self._filesystem.write_json(step_file_path, step_data)
+        self._step_repository.save(step_file_path, step_data)
 
     def _generate_timeout_warnings(
         self,
