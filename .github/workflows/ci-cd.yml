@@ -554,7 +554,6 @@ jobs:
           PYTHONPATH=tools pipenv run python3 tools/core/build_ide_bundle.py \
             --source-dir nWave \
             --output-dir dist/ide \
-            --clean \
             --verbose
 
       - name: 📦 Create release packages
