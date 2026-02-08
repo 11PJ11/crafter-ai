@@ -75,6 +75,4 @@ class TestExecuteTemplateSync:
         # Built output should contain phase names from validator
         validator = TDDPhaseValidator()
         for phase in validator.MANDATORY_PHASES:
-            assert phase in content, (
-                f"Built execute.md missing phase: {phase}"
-            )
+            assert phase in content, f"Built execute.md missing phase: {phase}"
