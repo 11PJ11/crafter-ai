@@ -37,6 +37,7 @@ try:
     from scripts.install.plugins.commands_plugin import CommandsPlugin
     from scripts.install.plugins.des_plugin import DESPlugin
     from scripts.install.plugins.registry import PluginRegistry
+    from scripts.install.plugins.skills_plugin import SkillsPlugin
     from scripts.install.plugins.templates_plugin import TemplatesPlugin
     from scripts.install.plugins.utilities_plugin import UtilitiesPlugin
     from scripts.install.preflight_checker import PreflightChecker
@@ -55,12 +56,13 @@ except ImportError:
     from plugins.commands_plugin import CommandsPlugin
     from plugins.des_plugin import DESPlugin
     from plugins.registry import PluginRegistry
+    from plugins.skills_plugin import SkillsPlugin
     from plugins.templates_plugin import TemplatesPlugin
     from plugins.utilities_plugin import UtilitiesPlugin
     from preflight_checker import PreflightChecker
 
 # Expected file counts from the build (under integration test)
-EXPECTED_AGENT_COUNT = 31
+EXPECTED_AGENT_COUNT = 43
 EXPECTED_COMMAND_COUNT = 23
 
 # ANSI color codes for --help output (only consumer)
@@ -296,6 +298,7 @@ class NWaveInstaller:
         registry.register(AgentsPlugin())
         registry.register(CommandsPlugin())
         registry.register(TemplatesPlugin())
+        registry.register(SkillsPlugin())
         registry.register(UtilitiesPlugin())
         registry.register(DESPlugin())
         return registry
@@ -307,6 +310,7 @@ class NWaveInstaller:
         - agents (priority 10)
         - commands (priority 20)
         - templates (priority 30)
+        - skills (priority 35)
         - utilities (priority 40)
 
         Returns:

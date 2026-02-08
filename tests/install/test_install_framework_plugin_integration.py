@@ -92,6 +92,9 @@ class TestInstallFrameworkUsesPluginRegistry:
                 "templates": PluginResult(
                     success=True, plugin_name="templates", message="OK"
                 ),
+                "skills": PluginResult(
+                    success=True, plugin_name="skills", message="OK"
+                ),
                 "utilities": PluginResult(
                     success=True, plugin_name="utilities", message="OK"
                 ),
@@ -101,8 +104,8 @@ class TestInstallFrameworkUsesPluginRegistry:
 
             installer.install_framework()
 
-            # Verify 5 plugins registered (including DES)
-            assert mock_registry.register.call_count == 5
+            # Verify 6 plugins registered (including skills and DES)
+            assert mock_registry.register.call_count == 6
 
             # Verify each plugin type was registered
             registered_plugins = [
@@ -113,6 +116,7 @@ class TestInstallFrameworkUsesPluginRegistry:
             assert "agents" in plugin_names
             assert "commands" in plugin_names
             assert "templates" in plugin_names
+            assert "skills" in plugin_names
             assert "utilities" in plugin_names
             assert "des" in plugin_names
 
@@ -208,6 +212,9 @@ class TestInstallFrameworkPluginExecutionOrder:
                 "templates": PluginResult(
                     success=True, plugin_name="templates", message="OK"
                 ),
+                "skills": PluginResult(
+                    success=True, plugin_name="skills", message="OK"
+                ),
                 "utilities": PluginResult(
                     success=True, plugin_name="utilities", message="OK"
                 ),
@@ -217,11 +224,12 @@ class TestInstallFrameworkPluginExecutionOrder:
 
             installer.install_framework()
 
-            # All 5 plugins should be registered (including DES)
-            assert len(registration_order) == 5
+            # All 6 plugins should be registered (including skills and DES)
+            assert len(registration_order) == 6
             assert "agents" in registration_order
             assert "commands" in registration_order
             assert "templates" in registration_order
+            assert "skills" in registration_order
             assert "utilities" in registration_order
             assert "des" in registration_order
 

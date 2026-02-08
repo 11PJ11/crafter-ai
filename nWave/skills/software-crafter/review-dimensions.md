@@ -1,0 +1,256 @@
+---
+name: review-dimensions
+description: Reviewer critique dimensions for peer review - implementation bias detection, test quality validation, completeness checks, and priority validation
+---
+
+# Code Quality Critique Dimensions
+
+When invoked in review mode, apply these critique dimensions to production code and tests.
+
+Persona shift: from implementer (build solutions) to independent peer reviewer (critique solutions).
+Focus: detect implementation bias, test quality issues, acceptance criteria coverage gaps.
+Mindset: fresh perspective with critical analysis - assume nothing, verify everything.
+
+Return complete YAML feedback to calling agent for display to user.
+
+---
+
+## Dimension 1: Implementation Bias Detection
+
+### Over-Engineering (YAGNI Violations)
+
+Pattern: features, abstractions, or infrastructure without corresponding acceptance criteria.
+
+Examples:
+- Caching layer without performance AC
+- Generic framework for single use case
+- Premature abstraction before Rule of Three
+- Design patterns without demonstrated complexity need
+- Infrastructure (queues, workers) without scale requirement
+
+Detection:
+- Compare implementation against acceptance criteria
+- Check if feature requested by stakeholder or assumed by developer
+- Verify performance requirements exist before optimization
+- Validate abstractions serve 3+ concrete cases
+
+Severity: Medium to High.
+
+### Premature Optimization
+
+Pattern: performance optimization without measurement proving necessity.
+
+Examples:
+- Custom caching without latency tests showing need
+- Complex O(log n) algorithms when simple O(n) meets AC
+- Memory optimizations without profiling data
+- Database denormalization without query analysis
+
+Detection: check for performance tests, verify AC specify thresholds, look for profiling data.
+Severity: Medium.
+
+### Solving Assumed Problems
+
+Pattern: implementing solutions for problems not in acceptance criteria.
+
+Examples:
+- Multi-tenancy when AC specify single-tenant
+- Internationalization when AC require English only
+- Audit logging when AC don't mention compliance
+
+Detection: map each feature to corresponding AC, flag features without traceability.
+Severity: Medium to High.
+
+---
+
+## Dimension 2: Test Quality Validation
+
+### Implementation Coupling
+
+Pattern: tests depend on implementation details, preventing refactoring.
+
+Examples:
+- Mocking domain objects or application services (violates port-boundary policy)
+- Asserting on private methods, fields, or internal state
+- Tests break on refactoring despite behavior unchanged
+- Tests duplicate production logic to verify correctness
+
+Detection:
+- Check if mocks used inside hexagon (domain/application layers) - VIOLATION
+- Verify tests call only public interfaces
+- Confirm tests validate observable behavior, not implementation
+- Check if Extract Method refactoring would break tests
+
+Severity: CRITICAL.
+
+### Shared Mutable State
+
+Pattern: tests share state causing flakiness, order dependencies, parallel execution failures.
+
+Examples:
+- Database state not reset between tests
+- Static variables mutated across tests
+- File system state persists between tests
+- In-memory caches shared across test methods
+
+Detection:
+- Run tests in random order - do they still pass?
+- Run tests in parallel - do they fail?
+- Check for test setup/teardown creating isolated state
+- Look for static fields, shared fixtures, class-level state
+
+Severity: HIGH.
+
+### Port-Boundary Violations
+
+Test doubles policy follows the port-boundary rules defined in the tdd-methodology skill.
+
+Severity: HIGH to CRITICAL.
+
+---
+
+## Dimension 3: Completeness Validation
+
+### Missing Acceptance Criteria Coverage
+
+Pattern: not all acceptance criteria have corresponding test coverage.
+
+Detection:
+- Map each acceptance criterion to test cases
+- Check coverage report shows 100% AC mapped to tests
+- Verify error paths have test coverage
+- Confirm edge cases explicitly tested
+
+Severity: CRITICAL.
+
+### Inadequate Error Scenario Coverage
+
+Pattern: only happy path tested, error handling untested.
+
+Examples:
+- No test for network timeout during payment
+- No test for database unavailable
+- No test for invalid input validation
+- No test for business rule violations
+
+Detection: count happy path vs error path tests, check exception types have triggering tests.
+Severity: HIGH.
+
+---
+
+## Code Readability Issues
+
+### Compose Method Violations
+
+Detection:
+- Methods longer than 10 lines
+- Multiple levels of indentation
+- Comments explaining "what" instead of "why"
+- Method name doesn't reveal full intent
+
+Severity: LOW to MEDIUM.
+
+---
+
+## Dimension: Priority Validation
+
+Validate that the roadmap addresses the LARGEST bottleneck first.
+
+### Questions
+
+**Q1: Is this the largest bottleneck?**
+Does timing data show this is the PRIMARY problem? Is there a larger problem being ignored?
+
+**Q2: Were simpler alternatives considered?**
+Does roadmap include rejected alternatives? Are rejection reasons evidence-based?
+
+**Q3: Is constraint prioritization correct?**
+Are user-mentioned constraints quantified by impact? Is a minority constraint dominating the solution?
+
+**Q4: Is architecture data-justified?**
+Is the key architectural decision supported by quantitative data?
+
+### Failure Conditions
+- FAIL if Q1 = NO (wrong problem being addressed)
+- FAIL if Q2 = MISSING (no alternatives considered)
+- FAIL if Q3 = INVERTED (minority constraint dominating)
+- FAIL if Q4 = NO_DATA and this is performance optimization
+
+---
+
+## Review Output Format
+
+Every review returns YAML in this format:
+
+```yaml
+review_id: "code_rev_{YYYYMMDD_HHMMSS}"
+reviewer: "software-crafter (review mode)"
+artifact: "{file paths reviewed}"
+iteration: {1 or 2}
+
+strengths:
+  - "{Specific positive observation with file:line reference}"
+
+issues_identified:
+  implementation_bias:
+    - issue: "{Specific pattern detected}"
+      severity: "critical|high|medium|low"
+      location: "{file:line-range}"
+      recommendation: "{Actionable fix}"
+
+  test_quality:
+    - issue: "{Test coupling or quality issue}"
+      severity: "critical|high"
+      location: "{test_file:line}"
+      recommendation: "{Fix description}"
+
+  completeness:
+    - issue: "{Missing coverage}"
+      severity: "critical"
+      location: "Missing test for AC-{number}"
+      recommendation: "{Add test: GIVEN... WHEN... THEN...}"
+
+  code_readability:
+    - issue: "{Readability issue}"
+      severity: "low"
+      location: "{file:line}"
+      recommendation: "{Extract methods: {names}}"
+
+approval_status: "approved|rejected_pending_revisions|conditionally_approved"
+critical_issues_count: {number}
+high_issues_count: {number}
+medium_issues_count: {number}
+low_issues_count: {number}
+```
+
+---
+
+## Severity Classification
+
+**Critical** (must resolve before handoff):
+- Test coupling to implementation (prevents refactoring)
+- Missing acceptance criteria test coverage
+- Port-boundary violations in critical paths
+
+**High** (strongly recommend resolving):
+- Shared mutable state in tests
+- Major over-engineering
+- Inadequate error scenario coverage
+
+**Medium** (should address if time permits):
+- Premature optimization
+- Solving assumed problems
+
+**Low** (enhancement suggestions):
+- Code readability improvements
+- Minor compose method violations
+- Naming improvements
+
+---
+
+## Review Iteration Rules
+
+- Iteration 1: comprehensive review with all critique dimensions
+- Iteration 2 (if needed): verify critical/high issues resolved, check for new issues
+- Max iterations: 2
+- Escalation: if not approved after 2 iterations, escalate to human facilitator

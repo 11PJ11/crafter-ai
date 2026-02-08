@@ -2,19 +2,13 @@
 
 **Command**: `/nw:version`
 
-## Purpose
+## Overview
 
-Display the current nWave framework version and build information to verify the installation is up-to-date.
-
-## Usage
-
-```bash
-/nw:version
-```
+Display the current nWave framework version and build information.
 
 ## Output
 
-When invoked, display the following information:
+When invoked, display:
 
 ```
 nWave Framework
@@ -26,27 +20,16 @@ Commands: 21
 
 Key Features:
 - Task tool delegation for sub-commands
-- Complete TDD cycle methodology (tracked in execution-log.yaml)
+- TDD cycle methodology (tracked in execution-log.yaml)
 - step_type support (atdd, research, infrastructure)
 
 Verification Markers:
 - execute.md: Contains "Single Source of Truth" reference
-- develop.md: Contains "/nw:execute @software-crafter" delegation pattern
+- develop.md: Contains "/nw:execute @nw-software-crafter" delegation pattern
 ```
 
-## Verification Instructions
+## Verification
 
-To verify you have the latest version:
-
-1. **Check TDD Cycle**: The execute command should reference `execution-log.yaml` as phase tracking format
-2. **Check Task Delegation**: The develop command should use `Task(subagent_type=..., prompt='/nw:...')` pattern
-3. **Check Agent Count**: Should have 24 agents and 21 commands (v1.6.0 includes Luna & Eclipse)
-
-## Quick Test
-
-Ask Claude Code to show:
-```
-grep "Single Source of Truth" from execute.md
-```
-
-Expected result: Reference to `execution-log.yaml` event format
+1. **TDD Cycle**: execute command references `execution-log.yaml` as phase tracking format
+2. **Task Delegation**: develop command uses `Task(subagent_type=..., prompt='/nw:...')` pattern
+3. **Agent Count**: 24 agents and 21 commands (v1.6.0 includes Luna and Eclipse)

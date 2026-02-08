@@ -88,6 +88,11 @@ class NWaveUninstaller:
             installation_found = True
             self.logger.info(f"    📂 Found nWave commands in: {commands_dir}")
 
+        skills_dir = self.claude_config_dir / "skills" / "nw"
+        if skills_dir.exists():
+            installation_found = True
+            self.logger.info(f"    📂 Found nWave skills in: {skills_dir}")
+
         if manifest_file.exists():
             installation_found = True
             self.logger.info("    📄 Found nWave manifest file")
@@ -195,6 +200,37 @@ class NWaveUninstaller:
                 except OSError:
                     self.logger.info(
                         "  📂 Kept agents directory (contains other files)"
+                    )
+
+    def remove_skills(self) -> None:
+        """Remove nWave skills."""
+        if self.dry_run:
+            self.logger.info("  🚨 [DRY RUN] Would remove nWave skills")
+            skills_nw_dir = self.claude_config_dir / "skills" / "nw"
+            if skills_nw_dir.exists():
+                self.logger.info("    🚨 [DRY RUN] Would remove skills/nw directory")
+            return
+
+        with self.logger.progress_spinner("  🚧 Removing nWave skills..."):
+            skills_nw_dir = self.claude_config_dir / "skills" / "nw"
+            if skills_nw_dir.exists():
+                shutil.rmtree(skills_nw_dir)
+                self.logger.info("  🗑️ Removed skills/nw directory")
+
+            # Remove parent skills directory if empty
+            skills_dir = self.claude_config_dir / "skills"
+            if skills_dir.exists():
+                try:
+                    if not any(skills_dir.iterdir()):
+                        skills_dir.rmdir()
+                        self.logger.info("  🗑️ Removed empty skills directory")
+                    else:
+                        self.logger.info(
+                            "  📂 Kept skills directory (contains other files)"
+                        )
+                except OSError:
+                    self.logger.info(
+                        "  📂 Kept skills directory (contains other files)"
                     )
 
     def remove_commands(self) -> None:
@@ -481,6 +517,7 @@ def main():
 
     # Remove components
     uninstaller.remove_agents()
+    uninstaller.remove_skills()
     uninstaller.remove_commands()
     uninstaller.remove_des_hooks()
     uninstaller.remove_config_files()

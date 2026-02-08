@@ -37,7 +37,11 @@ class AgentsPlugin(InstallationPlugin):
             dist_agent_dir = context.framework_source / "agents" / "nw"
             target_agent_dir = context.claude_dir / "agents" / "nw"
 
-            # Create target directory
+            # Clean and recreate target directory to remove stale files
+            if target_agent_dir.exists():
+                import shutil
+
+                shutil.rmtree(target_agent_dir)
             target_agent_dir.mkdir(parents=True, exist_ok=True)
 
             # Count agents in each source location
